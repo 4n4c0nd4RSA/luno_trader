@@ -10,7 +10,7 @@ This project is a simple trading bot for the Luno cryptocurrency exchange, desig
 - Records trading actions and updates wallet balances.
 
 ## Requirements
-- Python 3.x
+- Python 3.9.x
 - luno-python (Luno API client)
 - matplotlib (for visualization)
 - json (for handling order book history)
