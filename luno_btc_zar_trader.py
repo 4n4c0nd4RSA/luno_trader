@@ -8,7 +8,7 @@ import json
 API_KEY = 'xxx'
 API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
-AMOUNT = 0.0001  # Example amount of BTC to buy/sell
+AMOUNT = 0.0003  # Example amount of BTC to buy/sell
 
 # Initialize the Luno API client
 client = luno.Client(api_key_id=API_KEY, api_key_secret=API_SECRET)
@@ -121,6 +121,7 @@ def determine_action(ticker_data, confidence):
 
     # Calculate current BTC percentage of total value
     current_btc_percentage = btc_to_zar / total_value_zar
+    print(f'BTC %: {current_btc_percentage}%')
 
     # Define a threshold to avoid oscillation
     THRESHOLD = AMOUNT * float(ticker_data['bid']) / total_value_zar
@@ -247,7 +248,7 @@ def main():
         update_wallet_values(ticker_data)
 
         try:
-            time.sleep(1)
+            time.sleep(60)
         except:
             print('Could not sleep')
 
