@@ -18,8 +18,8 @@ This project is a simple trading bot for the Luno cryptocurrency exchange, desig
 ## Installation
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/luno-btc-zar-trader.git
-    cd luno-btc-zar-trader
+    git clone https://github.com/4n4c0nd4RSA/luno_trader.git
+    cd luno_trader
     ```
 
 2. Install the required packages:
