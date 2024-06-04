@@ -1,14 +1,21 @@
 import time
+import threading
 import luno_python.client as luno
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import json
+import logging
+import signal
+import sys
 
 # Constants
 API_KEY = 'xxx'
 API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
 AMOUNT = 0.0003  # Example amount of BTC to buy/sell
+
+# Initialize logging
+logging.basicConfig(filename='trading_bot.log', level=logging.INFO, format='%(asctime)s %(message)s')
 
 # Initialize the Luno API client
 client = luno.Client(api_key_id=API_KEY, api_key_secret=API_SECRET)
@@ -25,12 +32,15 @@ zar_values = []
 
 # Function to get the order book
 def get_order_book():
-    try:
-        response = client.get_order_book(pair=PAIR)
-        return response
-    except Exception as e:
-        print(f'Error getting order book: {e}')
-        return None
+    retries = 5
+    for i in range(retries):
+        try:
+            response = client.get_order_book(pair=PAIR)
+            return response
+        except Exception as e:
+            logging.error(f'Error getting order book: {e}')
+            time.sleep(2 ** i)  # Exponential backoff
+    return None
 
 # Function to read order book history from a file
 def read_order_book_history():
@@ -40,10 +50,10 @@ def read_order_book_history():
             history = [json.loads(line) for line in f]
         return history
     except FileNotFoundError:
-        print(f'History file {filename} not found.')
+        logging.warning(f'History file {filename} not found.')
         return []
     except Exception as e:
-        print(f'Error reading history file: {e}')
+        logging.error(f'Error reading history file: {e}')
         return []
 
 # Function to save the order book to a file
@@ -65,7 +75,7 @@ def calculate_confidence(current_order_book, history):
     current_asks = {float(order['price']): float(order['volume']) for order in current_order_book['asks'][:100]}
     current_bids = {float(order['price']): float(order['volume']) for order in current_order_book['bids'][:100]}
 
-    recent_history = history  # Use the entire history for comparison
+    recent_history = history[-100:]  # Use the most recent 100 entries for comparison
 
     ask_confidence = 0
     bid_confidence = 0
@@ -95,21 +105,27 @@ def calculate_confidence(current_order_book, history):
 
 # Function to get the latest ticker information
 def get_ticker():
-    try:
-        response = client.get_ticker(pair=PAIR)
-        return response
-    except Exception as e:
-        print(f'Error getting ticker information: {e}')
-        return None
+    retries = 5
+    for i in range(retries):
+        try:
+            response = client.get_ticker(pair=PAIR)
+            return response
+        except Exception as e:
+            logging.error(f'Error getting ticker information: {e}')
+            time.sleep(2 ** i)  # Exponential backoff
+    return None
 
 # Function to get fee information
 def get_fee_info():
-    try:
-        response = client.get_fee_info(pair=PAIR)
-        return response
-    except Exception as e:
-        print(f'Error getting fee information: {e}')
-        return None
+    retries = 5
+    for i in range(retries):
+        try:
+            response = client.get_fee_info(pair=PAIR)
+            return response
+        except Exception as e:
+            logging.error(f'Error getting fee information: {e}')
+            time.sleep(2 ** i)  # Exponential backoff
+    return None
 
 # Function to determine the action (Buy, Sell, or Nothing) based on confidence
 def determine_action(ticker_data, confidence):
@@ -121,7 +137,7 @@ def determine_action(ticker_data, confidence):
 
     # Calculate current BTC percentage of total value
     current_btc_percentage = btc_to_zar / total_value_zar
-    print(f'BTC %: {current_btc_percentage}%')
+    logging.info(f'BTC %: {current_btc_percentage}%')
 
     # Define a threshold to avoid oscillation
     THRESHOLD = AMOUNT * float(ticker_data['bid']) / total_value_zar
@@ -147,12 +163,12 @@ def mock_trade(order_type, amount, ticker_data, fee_info):
         if ZAR_balance >= total_cost:
             ZAR_balance -= total_cost
             BTC_balance += amount
-            print(f'Bought {amount} BTC at {price} ZAR/BTC')
-            print(f'Cost: {cost} ZAR')
-            print(f'Fee: {fee} ZAR')
-            print(f'Total Cost: {total_cost} ZAR')
+            logging.info(f'Bought {amount} BTC at {price} ZAR/BTC')
+            logging.info(f'Cost: {cost} ZAR')
+            logging.info(f'Fee: {fee} ZAR')
+            logging.info(f'Total Cost: {total_cost} ZAR')
         else:
-            print('Insufficient ZAR balance to complete the buy order')
+            logging.warning('Insufficient ZAR balance to complete the buy order')
     elif order_type == 'Sell':
         price = float(ticker_data['bid'])
         fee_percentage = float(fee_info['taker_fee'])
@@ -162,14 +178,14 @@ def mock_trade(order_type, amount, ticker_data, fee_info):
         if BTC_balance >= amount:
             BTC_balance -= amount
             ZAR_balance += total_revenue
-            print(f'Sold {amount} BTC at {price} ZAR/BTC')
-            print(f'Revenue: {revenue} ZAR')
-            print(f'Fee: {fee} ZAR')
-            print(f'Total Revenue: {total_revenue} ZAR')
+            logging.info(f'Sold {amount} BTC at {price} ZAR/BTC')
+            logging.info(f'Revenue: {revenue} ZAR')
+            logging.info(f'Fee: {fee} ZAR')
+            logging.info(f'Total Revenue: {total_revenue} ZAR')
         else:
-            print('Insufficient BTC balance to complete the sell order')
-    print(f'New ZAR balance: {ZAR_balance}')
-    print(f'New BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+            logging.warning('Insufficient BTC balance to complete the sell order')
+    logging.info(f'New ZAR balance: {ZAR_balance}')
+    logging.info(f'New BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
 
 # Function to update wallet values for plotting
 def update_wallet_values(ticker_data):
@@ -206,33 +222,38 @@ def update_plot(frame):
     plt.title('Wallet Values Over Time')
     plt.legend()
 
-# Main function to check the ticker and place orders
-def main():
-    global ZAR_balance, BTC_balance  # Ensure the main function knows about the global variables
+# Graceful shutdown handler
+def signal_handler(sig, frame):
+    logging.info('Gracefully shutting down...')
+    sys.exit(0)
 
-    fig = plt.figure()
-    ani = FuncAnimation(fig, update_plot, interval=1000)  # Update every second
+# Register signal handler
+signal.signal(signal.SIGINT, signal_handler)
+
+# Main function to check the ticker and place orders
+def trading_loop():
+    global ZAR_balance, BTC_balance  # Ensure the main function knows about the global variables
 
     while True:
         fee_info = get_fee_info()
         if not fee_info:
-            print('Failed to retrieve fee information')
-            return
+            logging.error('Failed to retrieve fee information')
+            continue
 
         ticker_data = get_ticker()
         if not ticker_data:
-            print('Failed to retrieve ticker data')
-            return
+            logging.error('Failed to retrieve ticker data')
+            continue
 
         order_book = get_order_book()
         if order_book:
             save_order_book_to_file(order_book)
         else:
-            print('Failed to retrieve order book')
+            logging.error('Failed to retrieve order book')
 
         history = read_order_book_history()
         confidence = calculate_confidence(order_book, history)
-        print(f'Confidence in BTC: {confidence}')
+        logging.info(f'Confidence in BTC: {confidence}')
 
         action = determine_action(ticker_data, confidence)
 
@@ -241,19 +262,20 @@ def main():
         elif action == 'Sell':
             mock_trade('Sell', AMOUNT, ticker_data, fee_info)
         else:
-            print('No action taken')
-        print(f'Current Total balance: {ZAR_balance + BTC_balance * float(ticker_data["bid"])}')
+            logging.info('No action taken')
+        logging.info(f'Current Total balance: {ZAR_balance + BTC_balance * float(ticker_data["bid"])}')
 
         # Update wallet values regardless of the action
         update_wallet_values(ticker_data)
 
-        try:
-            time.sleep(60)
-        except:
-            print('Could not sleep')
+        time.sleep(5)
 
-        plt.pause(0.1)  # Pause to allow the plot to update
+# Start the trading loop in a separate thread
+trading_thread = threading.Thread(target=trading_loop)
+trading_thread.daemon = True
+trading_thread.start()
 
 if __name__ == '__main__':
-    main()
-    plt.show()  # Show the plot after the loop ends
+    fig = plt.figure()
+    ani = FuncAnimation(fig, update_plot, interval=5000)  # Update every second
+    plt.show()  # Show the plot
