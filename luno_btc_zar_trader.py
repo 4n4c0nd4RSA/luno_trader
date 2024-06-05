@@ -2,6 +2,7 @@ import time
 import threading
 import luno_python.client as luno
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.animation import FuncAnimation
 import json
 import logging
@@ -13,6 +14,7 @@ API_KEY = 'xxx'
 API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
 AMOUNT = 0.0003  # Example amount of BTC to buy/sell
+RANGE = 200
 
 # Initialize logging
 logging.basicConfig(filename='trading_bot.log', level=logging.INFO, format='%(asctime)s %(message)s')
@@ -35,7 +37,7 @@ def get_order_book():
     retries = 5
     for i in range(retries):
         try:
-            response = client.get_order_book(pair=PAIR)
+            response = client.get_order_book_full(pair=PAIR)
             return response
         except Exception as e:
             logging.error(f'Error getting order book: {e}')
@@ -68,40 +70,19 @@ def save_order_book_to_file(order_book):
         f.write(json.dumps(record) + '\n')
 
 # Function to calculate confidence based on order book history
-def calculate_confidence(current_order_book, history):
-    if not history:
-        return 0.5  # Neutral confidence if no history is available
-
-    current_asks = {float(order['price']): float(order['volume']) for order in current_order_book['asks'][:100]}
-    current_bids = {float(order['price']): float(order['volume']) for order in current_order_book['bids'][:100]}
-
-    recent_history = history[-100:]  # Use the most recent 100 entries for comparison
-
-    ask_confidence = 0
-    bid_confidence = 0
-    total_entries = len(recent_history)
-
-    for entry in recent_history:
-        historical_asks = {float(order['price']): float(order['volume']) for order in entry['order_book']['asks'][:100]}
-        historical_bids = {float(order['price']): float(order['volume']) for order in entry['order_book']['bids'][:100]}
-
-        # Compare historical asks with current asks
-        for price, volume in historical_asks.items():
-            if price in current_asks:
-                ask_confidence += min(volume, current_asks[price]) / max(volume, current_asks[price])
-
-        # Compare historical bids with current bids
-        for price, volume in historical_bids.items():
-            if price in current_bids:
-                bid_confidence += min(volume, current_bids[price]) / max(volume, current_bids[price])
-
-    # Normalize confidence values to be between 0 and 1
-    ask_confidence /= total_entries
-    bid_confidence /= total_entries
-
-    # Combine ask and bid confidence to get overall confidence
-    overall_confidence = (ask_confidence + bid_confidence) / 2
-    return overall_confidence / 100.0
+def calculate_confidence(current_order_book):
+    average_confidence = 0
+    for i in range(1, RANGE):
+        asks_ = current_order_book['asks'][:i]
+        bids_ = current_order_book['bids'][:i]
+        total_supply_ = sum(float(ask['volume']) for ask in asks_)
+        total_demand_ = sum(float(bid['volume']) for bid in bids_)
+        if total_supply_ + total_demand_ == 0:
+            confidence_ = 0.5
+        else:
+            confidence_ = total_demand_ / (total_supply_ + total_demand_)
+        average_confidence += confidence_
+    return average_confidence / RANGE
 
 # Function to get the latest ticker information
 def get_ticker():
@@ -233,7 +214,7 @@ signal.signal(signal.SIGINT, signal_handler)
 # Main function to check the ticker and place orders
 def trading_loop():
     global ZAR_balance, BTC_balance  # Ensure the main function knows about the global variables
-
+    old_confidence = None
     while True:
         fee_info = get_fee_info()
         if not fee_info:
@@ -250,10 +231,15 @@ def trading_loop():
             save_order_book_to_file(order_book)
         else:
             logging.error('Failed to retrieve order book')
-
-        history = read_order_book_history()
-        confidence = calculate_confidence(order_book, history)
+        conf_delta = 0
+        confidence = calculate_confidence(order_book)
+        if old_confidence is not None:
+            conf_delta = confidence - old_confidence 
+        old_confidence = confidence
+        logging.info(f" ")
+        logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
         logging.info(f'Confidence in BTC: {confidence}')
+        logging.info(f'Confidence Delta: {conf_delta}')
 
         action = determine_action(ticker_data, confidence)
 
