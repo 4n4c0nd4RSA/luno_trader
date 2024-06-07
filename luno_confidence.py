@@ -6,17 +6,15 @@ import logging
 from matplotlib.animation import FuncAnimation
 
 # Constants
-API_KEY = 'xxx'
-API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
-RANGE = 200
+PRICE_DELTA_VALUE = 20000
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
 
 # Initialize logging
 logging.basicConfig(filename='trading_bot.log', level=logging.INFO, format='%(asctime)s %(message)s')
 
 # Initialize the Luno API client
-client = luno.Client(api_key_id=API_KEY, api_key_secret=API_SECRET)
+client = luno.Client()
 
 # Function to get the order book
 def get_order_book():
@@ -30,6 +28,18 @@ def get_order_book():
             time.sleep(2 ** i)  # Exponential backoff
     return None
 
+# Function to get the latest ticker information
+def get_ticker():
+    retries = 5
+    for i in range(retries):
+        try:
+            response = client.get_ticker(pair=PAIR)
+            return response
+        except Exception as e:
+            logging.error(f'Error getting ticker information: {e}')
+            time.sleep(2 ** i)  # Exponential backoff
+    return None
+
 # Function to update the plot
 def update_plot(frame):
     order_book = get_order_book()
@@ -37,6 +47,12 @@ def update_plot(frame):
         logging.error('Failed to retrieve order book')
         return
 
+    ticker_data = get_ticker()
+    if ticker_data is None:
+        logging.error('Failed to retrieve ticker data')
+        return
+
+    current_price = float(ticker_data['bid'])
     # Parse the order book to get asks and bids
     asks = order_book['asks']
     bids = order_book['bids']
@@ -44,9 +60,14 @@ def update_plot(frame):
     confidences = []
     labels = []
 
-    for i in range(1, RANGE):
-        asks_ = asks[:i]
-        bids_ = bids[:i]
+    for i in range(1, int(PRICE_DELTA_VALUE/1000)):
+        PRICE_DELTA = i * 1000
+        
+        asks_within_range = [ask for ask in order_book['asks'] if current_price - PRICE_DELTA <= float(ask['price']) <= current_price + PRICE_DELTA]
+        bids_within_range = [bid for bid in order_book['bids'] if current_price - PRICE_DELTA <= float(bid['price']) <= current_price + PRICE_DELTA]
+
+        asks_ = asks_within_range
+        bids_ = bids_within_range
         total_supply_ = sum(float(ask['volume']) for ask in asks_)
         total_demand_ = sum(float(bid['volume']) for bid in bids_)
 
@@ -64,7 +85,7 @@ def update_plot(frame):
     plt.ylim(0, 1)
     plt.xlabel('Order Book')
     plt.ylabel('Confidence')
-    plt.title('Confidence: First 100 Orders to Full Book')
+    plt.title('Confidence by Orders Book Range')
     plt.grid(True)
 
 # Set up the plot

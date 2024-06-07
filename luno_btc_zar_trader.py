@@ -8,13 +8,15 @@ import json
 import logging
 import signal
 import sys
+from scipy.stats import linregress
 
 # Constants
 API_KEY = 'xxx'
 API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
-AMOUNT = 0.0003  # Example amount of BTC to buy/sell
-RANGE = 200
+AMOUNT = 0.0001  # Example amount of BTC to buy/sell
+RANGE = 20
+THRESHOLD = 0.1
 
 # Initialize logging
 logging.basicConfig(filename='trading_bot.log', level=logging.INFO, format='%(asctime)s %(message)s')
@@ -70,19 +72,46 @@ def save_order_book_to_file(order_book):
         f.write(json.dumps(record) + '\n')
 
 # Function to calculate confidence based on order book history
-def calculate_confidence(current_order_book):
+def calculate_confidence(current_order_book, current_price):
     average_confidence = 0
     for i in range(1, RANGE):
-        asks_ = current_order_book['asks'][:i]
-        bids_ = current_order_book['bids'][:i]
-        total_supply_ = sum(float(ask['volume']) for ask in asks_)
-        total_demand_ = sum(float(bid['volume']) for bid in bids_)
+        currency_range = i * 1000
+        asks_within_range = [ask for ask in current_order_book['asks'] if current_price - currency_range <= float(ask['price']) <= current_price + currency_range]
+        bids_within_range = [bid for bid in current_order_book['bids'] if current_price - currency_range <= float(bid['price']) <= current_price + currency_range]
+
+        total_supply_ = sum(float(ask['volume']) for ask in asks_within_range)
+        total_demand_ = sum(float(bid['volume']) for bid in bids_within_range)
+
         if total_supply_ + total_demand_ == 0:
             confidence_ = 0.5
         else:
             confidence_ = total_demand_ / (total_supply_ + total_demand_)
+            slope_confidence_ = calculate_slope_confidence(asks_within_range, bids_within_range)
+            confidence_ += slope_confidence_
+            confidence_ = confidence_ / 2
         average_confidence += confidence_
-    return average_confidence / RANGE
+    average_confidence = average_confidence / RANGE
+    return average_confidence
+
+# Function to calculate confidence based on slope of order book data
+def calculate_slope_confidence(asks, bids):
+    ask_prices = np.array([float(ask['price']) for ask in asks])
+    ask_volumes = np.array([float(ask['volume']) for ask in asks])
+    bid_prices = np.array([float(bid['price']) for bid in bids])
+    bid_volumes = np.array([float(bid['volume']) for bid in bids])
+
+    cumulative_ask_volumes = np.cumsum(ask_volumes)
+    cumulative_bid_volumes = np.cumsum(bid_volumes)
+
+    ask_slope, _, _, _, _ = linregress(ask_prices, cumulative_ask_volumes)
+    bid_slope, _, _, _, _ = linregress(bid_prices, cumulative_bid_volumes)
+
+    if ask_slope + (-1 * bid_slope) == 0:
+        slope_confidence = 0.5
+    else:
+        slope_confidence = (-1 * bid_slope) / (ask_slope + (-1 * bid_slope))
+
+    return slope_confidence
 
 # Function to get the latest ticker information
 def get_ticker():
@@ -120,9 +149,6 @@ def determine_action(ticker_data, confidence):
     current_btc_percentage = btc_to_zar / total_value_zar
     logging.info(f'BTC %: {current_btc_percentage}%')
 
-    # Define a threshold to avoid oscillation
-    THRESHOLD = AMOUNT * float(ticker_data['bid']) / total_value_zar
-
     # Determine action based on the target confidence and threshold
     if current_btc_percentage < confidence - THRESHOLD:
         return 'Buy'
@@ -137,7 +163,7 @@ def mock_trade(order_type, amount, ticker_data, fee_info):
     amount = float(amount)
     if order_type == 'Buy':
         price = float(ticker_data['ask'])
-        fee_percentage = float(fee_info['maker_fee'])
+        fee_percentage = 0.0 # float(fee_info['maker_fee'])
         cost = price * amount
         fee = cost * fee_percentage
         total_cost = cost + fee
@@ -232,7 +258,7 @@ def trading_loop():
         else:
             logging.error('Failed to retrieve order book')
         conf_delta = 0
-        confidence = calculate_confidence(order_book)
+        confidence = calculate_confidence(order_book, float(ticker_data['bid']))
         if old_confidence is not None:
             conf_delta = confidence - old_confidence 
         old_confidence = confidence
