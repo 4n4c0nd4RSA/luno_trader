@@ -163,7 +163,7 @@ def mock_trade(order_type, amount, ticker_data, fee_info):
     amount = float(amount)
     if order_type == 'Buy':
         price = float(ticker_data['ask'])
-        fee_percentage = 0.0 # float(fee_info['maker_fee'])
+        fee_percentage = float(fee_info['maker_fee'])
         cost = price * amount
         fee = cost * fee_percentage
         total_cost = cost + fee
