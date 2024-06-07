@@ -53,9 +53,6 @@ def update_plot(frame):
         return
 
     current_price = float(ticker_data['bid'])
-    # Parse the order book to get asks and bids
-    asks = order_book['asks']
-    bids = order_book['bids']
 
     confidences = []
     labels = []
@@ -83,9 +80,9 @@ def update_plot(frame):
     # Plotting
     plt.bar(labels, confidences, color='blue')
     plt.ylim(0, 1)
-    plt.xlabel('Order Book')
+    plt.xlabel('Per R1000 Range')
     plt.ylabel('Confidence')
-    plt.title('Confidence by Orders Book Range')
+    plt.title('Confidence by Price Range')
     plt.grid(True)
 
 # Set up the plot

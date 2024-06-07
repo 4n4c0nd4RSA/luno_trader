@@ -60,17 +60,6 @@ def read_order_book_history():
         logging.error(f'Error reading history file: {e}')
         return []
 
-# Function to save the order book to a file
-def save_order_book_to_file(order_book):
-    filename = 'order_book_history.json'
-    current_time = time.time()
-    with open(filename, 'a') as f:
-        record = {
-            'timestamp': current_time,
-            'order_book': order_book
-        }
-        f.write(json.dumps(record) + '\n')
-
 # Function to calculate confidence based on order book history
 def calculate_confidence(current_order_book, current_price):
     average_confidence = 0
@@ -100,6 +89,10 @@ def calculate_slope_confidence(asks, bids):
     bid_prices = np.array([float(bid['price']) for bid in bids])
     bid_volumes = np.array([float(bid['volume']) for bid in bids])
 
+    # Check if ask_prices or bid_prices are empty
+    if len(ask_prices) == 0 or len(bid_prices) == 0:
+        return 0.5  # or another default value
+
     cumulative_ask_volumes = np.cumsum(ask_volumes)
     cumulative_bid_volumes = np.cumsum(bid_volumes)
 
@@ -110,8 +103,8 @@ def calculate_slope_confidence(asks, bids):
         slope_confidence = 0.5
     else:
         slope_confidence = (-1 * bid_slope) / (ask_slope + (-1 * bid_slope))
-
     return slope_confidence
+
 
 # Function to get the latest ticker information
 def get_ticker():
@@ -163,7 +156,7 @@ def mock_trade(order_type, amount, ticker_data, fee_info):
     amount = float(amount)
     if order_type == 'Buy':
         price = float(ticker_data['ask'])
-        fee_percentage = float(fee_info['maker_fee'])
+        fee_percentage = 0.0 # float(fee_info['maker_fee'])
         cost = price * amount
         fee = cost * fee_percentage
         total_cost = cost + fee
@@ -253,10 +246,10 @@ def trading_loop():
             continue
 
         order_book = get_order_book()
-        if order_book:
-            save_order_book_to_file(order_book)
-        else:
+        if not order_book:
             logging.error('Failed to retrieve order book')
+            continue
+
         conf_delta = 0
         confidence = calculate_confidence(order_book, float(ticker_data['bid']))
         if old_confidence is not None:
