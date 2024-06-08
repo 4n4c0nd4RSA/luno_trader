@@ -15,7 +15,7 @@ API_KEY = 'xxx'
 API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
 AMOUNT = 0.0001  # Example amount of BTC to buy/sell
-RANGE = 20
+RANGE = 400
 THRESHOLD = 0.1
 
 # Initialize logging
@@ -45,20 +45,6 @@ def get_order_book():
             logging.error(f'Error getting order book: {e}')
             time.sleep(2 ** i)  # Exponential backoff
     return None
-
-# Function to read order book history from a file
-def read_order_book_history():
-    filename = 'order_book_history.json'
-    try:
-        with open(filename, 'r') as f:
-            history = [json.loads(line) for line in f]
-        return history
-    except FileNotFoundError:
-        logging.warning(f'History file {filename} not found.')
-        return []
-    except Exception as e:
-        logging.error(f'Error reading history file: {e}')
-        return []
 
 # Function to calculate confidence based on order book history
 def calculate_confidence(current_order_book, current_price):

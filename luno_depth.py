@@ -8,7 +8,7 @@ from scipy.stats import linregress
 
 # Constants
 PAIR = 'XBTZAR'
-PRICE_DELTA = 20000
+PRICE_DELTA = 400000
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
 
 # Initialize logging

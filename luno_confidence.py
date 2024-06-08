@@ -7,7 +7,7 @@ from matplotlib.animation import FuncAnimation
 
 # Constants
 PAIR = 'XBTZAR'
-PRICE_DELTA_VALUE = 20000
+PRICE_DELTA_VALUE = 400000
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
 
 # Initialize logging

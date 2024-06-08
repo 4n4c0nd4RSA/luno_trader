@@ -14,6 +14,9 @@ This project is a simple trading bot for the Luno cryptocurrency exchange, desig
 - luno-python (Luno API client)
 - matplotlib (for visualization)
 - json (for handling order book history)
+- numpy (for numerical operations)
+- scipy (for statistical analysis)
+- logging (for logging trading actions and errors)
 
 ## Installation
 1. Clone the repository:
@@ -24,7 +27,7 @@ This project is a simple trading bot for the Luno cryptocurrency exchange, desig
 
 2. Install the required packages:
     ```bash
-    pip install luno-python matplotlib
+    pip install luno-python matplotlib numpy scipy
     ```
 
 3. Set up your Luno API credentials by modifying the `API_KEY` and `API_SECRET` constants in the script:
@@ -47,12 +50,13 @@ The bot will:
 
 ## Project Structure
 - `luno_btc_zar_trader.py`: The main script containing the trading bot logic.
-- `order_book_history.json`: A JSON file to store order book history data.
+- `luno_confidence.py`: Script to calculate and visualize confidence levels based on historical order book data.
+- `luno_depth.py`: Script to analyze order book depth and visualize cumulative order book volumes.
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-```markdown
+```
 MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
