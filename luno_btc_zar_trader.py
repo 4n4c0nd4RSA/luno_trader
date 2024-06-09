@@ -1,13 +1,13 @@
 import time
+import os
+import logging
+import signal
+import sys
 import threading
 import luno_python.client as luno
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
-import json
-import logging
-import signal
-import sys
 from scipy.stats import linregress
 
 # Constants
@@ -21,8 +21,22 @@ THRESHOLD = 0.1
 # Initialize logging
 logging.basicConfig(filename='trading_bot.log', level=logging.INFO, format='%(asctime)s %(message)s')
 
+api_key_id = API_KEY
+if api_key_id == 'xxx':
+    try:
+        api_key_id = os.getenv('LUNO_API_KEY_ID')
+    except:
+        api_key_id = 'xxx'
+
+api_key_secret = API_SECRET
+if api_key_secret == 'xxx':
+    try:
+        api_key_secret = os.getenv('LUNO_API_KEY_SECRET')
+    except:
+        api_key_secret = 'xxx'
+
 # Initialize the Luno API client
-client = luno.Client(api_key_id=API_KEY, api_key_secret=API_SECRET)
+client = luno.Client(api_key_id=api_key_id, api_key_secret=api_key_secret)
 
 # Initialize wallet balances
 ZAR_balance = 2000.0  # Initial ZAR balance
@@ -70,26 +84,29 @@ def calculate_confidence(current_order_book, current_price):
 
 # Function to calculate confidence based on slope of order book data
 def calculate_slope_confidence(asks, bids):
-    ask_prices = np.array([float(ask['price']) for ask in asks])
-    ask_volumes = np.array([float(ask['volume']) for ask in asks])
-    bid_prices = np.array([float(bid['price']) for bid in bids])
-    bid_volumes = np.array([float(bid['volume']) for bid in bids])
+    try:
+        ask_prices = np.array([float(ask['price']) for ask in asks])
+        ask_volumes = np.array([float(ask['volume']) for ask in asks])
+        bid_prices = np.array([float(bid['price']) for bid in bids])
+        bid_volumes = np.array([float(bid['volume']) for bid in bids])
 
-    # Check if ask_prices or bid_prices are empty
-    if len(ask_prices) == 0 or len(bid_prices) == 0:
-        return 0.5  # or another default value
+        # Check if ask_prices or bid_prices are empty
+        if len(ask_prices) == 0 or len(bid_prices) == 0:
+            return 0.5  # or another default value
 
-    cumulative_ask_volumes = np.cumsum(ask_volumes)
-    cumulative_bid_volumes = np.cumsum(bid_volumes)
+        cumulative_ask_volumes = np.cumsum(ask_volumes)
+        cumulative_bid_volumes = np.cumsum(bid_volumes)
 
-    ask_slope, _, _, _, _ = linregress(ask_prices, cumulative_ask_volumes)
-    bid_slope, _, _, _, _ = linregress(bid_prices, cumulative_bid_volumes)
+        ask_slope, _, _, _, _ = linregress(ask_prices, cumulative_ask_volumes)
+        bid_slope, _, _, _, _ = linregress(bid_prices, cumulative_bid_volumes)
 
-    if ask_slope + (-1 * bid_slope) == 0:
-        slope_confidence = 0.5
-    else:
-        slope_confidence = (-1 * bid_slope) / (ask_slope + (-1 * bid_slope))
-    return slope_confidence
+        if ask_slope + (-1 * bid_slope) == 0:
+            slope_confidence = 0.5
+        else:
+            slope_confidence = (-1 * bid_slope) / (ask_slope + (-1 * bid_slope))
+        return slope_confidence
+    except:
+        return 0.5
 
 
 # Function to get the latest ticker information

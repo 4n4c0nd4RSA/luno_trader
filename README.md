@@ -35,6 +35,10 @@ This project is a simple trading bot for the Luno cryptocurrency exchange, desig
     API_KEY = 'your_api_key'
     API_SECRET = 'your_api_secret'
     ```
+    Optionally you can set the following environment variables:
+    - LUNO_API_KEY_ID
+    - LUNO_API_KEY_SECRET
+
 
 ## Usage
 Run the script to start the trading bot:
