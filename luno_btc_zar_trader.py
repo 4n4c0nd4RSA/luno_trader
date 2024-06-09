@@ -4,6 +4,7 @@ import logging
 import signal
 import sys
 import threading
+import argparse
 import luno_python.client as luno
 import matplotlib.pyplot as plt
 import numpy as np
@@ -39,8 +40,8 @@ if api_key_secret == 'xxx':
 client = luno.Client(api_key_id=api_key_id, api_key_secret=api_key_secret)
 
 # Initialize wallet balances
-ZAR_balance = 2000.0  # Initial ZAR balance
-BTC_balance = 0.0     # Initial BTC balance
+ZAR_balance = 0  # Initial ZAR balance
+BTC_balance = 0  # Initial BTC balance
 
 # Lists to store wallet values over time
 time_steps = []
@@ -108,7 +109,6 @@ def calculate_slope_confidence(asks, bids):
     except:
         return 0.5
 
-
 # Function to get the latest ticker information
 def get_ticker():
     retries = 5
@@ -136,13 +136,14 @@ def get_fee_info():
 # Function to determine the action (Buy, Sell, or Nothing) based on confidence
 def determine_action(ticker_data, confidence):
     global ZAR_balance, BTC_balance
-
     # Calculate current BTC value in ZAR
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
     total_value_zar = ZAR_balance + btc_to_zar
 
     # Calculate current BTC percentage of total value
-    current_btc_percentage = btc_to_zar / total_value_zar
+    current_btc_percentage = 0
+    if (total_value_zar != 0):
+        current_btc_percentage = btc_to_zar / total_value_zar
     logging.info(f'BTC %: {current_btc_percentage}%')
 
     # Determine action based on the target confidence and threshold
@@ -153,13 +154,60 @@ def determine_action(ticker_data, confidence):
     else:
         return 'Nothing'
 
+# Function to get minimum trade sizes
+def get_minimum_trade_sizes():
+    return 0.0002  # default value in case of failure
+
+# Update balances by fetching latest balances from the exchange
+def update_balances(ticker_data):
+    global ZAR_balance, BTC_balance
+    try:
+        balance_response = client.get_balances(assets=['ZAR', 'XBT'])
+        ZAR_balance = 0
+        BTC_balance = 0
+        for balance in balance_response['balance']:
+            if balance['asset'] == 'ZAR':
+                ZAR_balance += float(balance['balance'])
+            elif balance['asset'] == 'XBT':
+                BTC_balance += float(balance['balance'])
+        logging.info(f'Updated ZAR balance: {ZAR_balance}')
+        logging.info(f'Updated BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+    except Exception as e:
+        logging.error(f'Error fetching updated balances: {e}')
+
+# Function to execute an actual trade
+def execute_trade(order_type, amount, ticker_data, fee_info):
+    global ZAR_balance, BTC_balance
+
+    min_trade_size = get_minimum_trade_sizes()
+    amount = max(float(amount), min_trade_size)
+
+    if order_type == 'Buy':
+        price = float(ticker_data['ask'])
+        try:
+            response = client.post_market_order(pair=PAIR, type='BUY', counter_volume=amount * price)
+            # logging.info(f'Bought {amount} BTC at {price} ZAR/BTC, order ID: {response["order_id"]}')
+            logging.info(f'Bought {amount} BTC at {price} ZAR/BTC')
+        except Exception as e:
+            logging.error(f'Error executing buy order: {e}')
+    elif order_type == 'Sell':
+        price = float(ticker_data['bid'])
+        try:
+            response = client.post_market_order(pair=PAIR, type='SELL', base_volume=amount)
+            logging.info(f'Sold {amount} BTC at {price} ZAR/BTC')
+            # logging.info(f'Sold {amount} BTC at {price} ZAR/BTC, order ID: {response["order_id"]}')
+        except Exception as e:
+            logging.error(f'Error executing sell order: {e}')
+    update_balances(ticker_data)
+
+
 # Mock trade function to print what would happen in a trade
 def mock_trade(order_type, amount, ticker_data, fee_info):
     global ZAR_balance, BTC_balance
     amount = float(amount)
     if order_type == 'Buy':
         price = float(ticker_data['ask'])
-        fee_percentage = 0.0 # float(fee_info['maker_fee'])
+        fee_percentage = float(fee_info['taker_fee'])
         cost = price * amount
         fee = cost * fee_percentage
         total_cost = cost + fee
@@ -234,7 +282,7 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # Main function to check the ticker and place orders
-def trading_loop():
+def trading_loop(true_trade):
     global ZAR_balance, BTC_balance  # Ensure the main function knows about the global variables
     old_confidence = None
     while True:
@@ -247,6 +295,8 @@ def trading_loop():
         if not ticker_data:
             logging.error('Failed to retrieve ticker data')
             continue
+
+        update_balances(ticker_data)
 
         order_book = get_order_book()
         if not order_book:
@@ -266,11 +316,19 @@ def trading_loop():
         action = determine_action(ticker_data, confidence)
 
         if action == 'Buy':
-            mock_trade('Buy', AMOUNT, ticker_data, fee_info)
+            if true_trade:
+                execute_trade('Buy', AMOUNT, ticker_data, fee_info)
+            else:
+                mock_trade('Buy', AMOUNT, ticker_data, fee_info)
         elif action == 'Sell':
-            mock_trade('Sell', AMOUNT, ticker_data, fee_info)
+            if true_trade:
+                execute_trade('Sell', AMOUNT, ticker_data, fee_info)
+            else:
+                mock_trade('Sell', AMOUNT, ticker_data, fee_info)
         else:
             logging.info('No action taken')
+        logging.info(f'Current ZAR balance: {ZAR_balance}')
+        logging.info(f'Current BTC balance: {BTC_balance}')
         logging.info(f'Current Total balance: {ZAR_balance + BTC_balance * float(ticker_data["bid"])}')
 
         # Update wallet values regardless of the action
@@ -278,8 +336,13 @@ def trading_loop():
 
         time.sleep(5)
 
+# Argument parser
+parser = argparse.ArgumentParser(description='Luno Trading Bot')
+parser.add_argument('--true-trade', action='store_true', help='Execute real trades')
+args = parser.parse_args()
+
 # Start the trading loop in a separate thread
-trading_thread = threading.Thread(target=trading_loop)
+trading_thread = threading.Thread(target=trading_loop, args=(args.true_trade,))
 trading_thread.daemon = True
 trading_thread.start()
 
