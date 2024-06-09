@@ -41,9 +41,14 @@ This project is a simple trading bot for the Luno cryptocurrency exchange, desig
 
 
 ## Usage
-Run the script to start the trading bot:
+Run the script to start the trading bot in MOCK mode:
 ```bash
 python luno_btc_zar_trader.py
+```
+
+Run the script to start the trading bot in TRADE mode:
+```bash
+python luno_btc_zar_trader.py --true-trade
 ```
 
 The bot will:
