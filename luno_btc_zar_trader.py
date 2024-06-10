@@ -8,6 +8,7 @@ import argparse
 import luno_python.client as luno
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib.animation import FuncAnimation
 from scipy.stats import linregress
 
@@ -17,7 +18,7 @@ API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
 AMOUNT = 0.0001  # Example amount of BTC to buy/sell
 RANGE = 400
-THRESHOLD = 0.1
+THRESHOLD = 0.08
 
 # Initialize logging
 logging.basicConfig(filename='trading_bot.log', level=logging.INFO, format='%(asctime)s %(message)s')
@@ -61,9 +62,26 @@ def get_order_book():
             time.sleep(2 ** i)  # Exponential backoff
     return None
 
+# Fetch BTC/ZAR price history
+def fetch_trade_history(pair='XBTZAR'):
+    res = client.list_trades(pair=pair)
+    return res['trades']
+
+# Process data into a DataFrame
+def process_data(candles):
+    data = []
+    for candle in candles:
+        timestamp = pd.to_datetime(candle['timestamp'], unit='ms')
+        price = float(candle['price'])
+        volume = float(candle['volume'])
+        data.append([timestamp, price, volume])
+    df = pd.DataFrame(data, columns=['Timestamp', 'Price', 'Volume'])
+    return df.set_index('Timestamp')
+
 # Function to calculate confidence based on order book history
 def calculate_confidence(current_order_book, current_price):
     average_confidence = 0
+    price_confidence_ = calculate_price_confidence()
     for i in range(1, RANGE):
         currency_range = i * 1000
         asks_within_range = [ask for ask in current_order_book['asks'] if current_price - currency_range <= float(ask['price']) <= current_price + currency_range]
@@ -78,7 +96,8 @@ def calculate_confidence(current_order_book, current_price):
             confidence_ = total_demand_ / (total_supply_ + total_demand_)
             slope_confidence_ = calculate_slope_confidence(asks_within_range, bids_within_range)
             confidence_ += slope_confidence_
-            confidence_ = confidence_ / 2
+            confidence_ += price_confidence_
+            confidence_ = confidence_ / 3
         average_confidence += confidence_
     average_confidence = average_confidence / RANGE
     return average_confidence
@@ -107,6 +126,30 @@ def calculate_slope_confidence(asks, bids):
             slope_confidence = (-1 * bid_slope) / (ask_slope + (-1 * bid_slope))
         return slope_confidence
     except:
+        return 0.5
+
+# Function to calculate price confidence
+def calculate_price_confidence():
+    try:
+        candles = fetch_trade_history()
+        df = process_data(candles)
+        
+        # Calculate the average angle straight line
+        start_price = df['Price'].iloc[0]
+        end_price = df['Price'].iloc[-1]
+        x_diff = (df.index[-1] - df.index[0]).total_seconds()  # Difference in seconds
+        y_diff = end_price - start_price
+
+        # Calculate the slope
+        slope = y_diff / x_diff
+        mapped_value = 1 / (1 + np.exp(-slope))
+        
+        mapped_value += 0.5
+        mapped_value = mapped_value / 2
+
+        return mapped_value
+    except Exception as e:
+        logging.error(e)
         return 0.5
 
 # Function to get the latest ticker information
@@ -159,19 +202,20 @@ def get_minimum_trade_sizes():
     return 0.0002  # default value in case of failure
 
 # Update balances by fetching latest balances from the exchange
-def update_balances(ticker_data):
+def update_balances(ticker_data, true_trade):
     global ZAR_balance, BTC_balance
     try:
-        balance_response = client.get_balances(assets=['ZAR', 'XBT'])
-        ZAR_balance = 0
-        BTC_balance = 0
-        for balance in balance_response['balance']:
-            if balance['asset'] == 'ZAR':
-                ZAR_balance += float(balance['balance'])
-            elif balance['asset'] == 'XBT':
-                BTC_balance += float(balance['balance'])
-        logging.info(f'Updated ZAR balance: {ZAR_balance}')
-        logging.info(f'Updated BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+        if true_trade:
+            balance_response = client.get_balances(assets=['ZAR', 'XBT'])
+            ZAR_balance = 0
+            BTC_balance = 0
+            for balance in balance_response['balance']:
+                if balance['asset'] == 'ZAR':
+                    ZAR_balance += float(balance['balance'])
+                elif balance['asset'] == 'XBT':
+                    BTC_balance += float(balance['balance'])
+            logging.info(f'Updated ZAR balance: {ZAR_balance}')
+            logging.info(f'Updated BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
     except Exception as e:
         logging.error(f'Error fetching updated balances: {e}')
 
@@ -185,20 +229,18 @@ def execute_trade(order_type, amount, ticker_data, fee_info):
     if order_type == 'Buy':
         price = float(ticker_data['ask'])
         try:
-            response = client.post_market_order(pair=PAIR, type='BUY', counter_volume=amount * price)
-            # logging.info(f'Bought {amount} BTC at {price} ZAR/BTC, order ID: {response["order_id"]}')
+            client.post_market_order(pair=PAIR, type='BUY', counter_volume=amount * price)
             logging.info(f'Bought {amount} BTC at {price} ZAR/BTC')
         except Exception as e:
             logging.error(f'Error executing buy order: {e}')
     elif order_type == 'Sell':
         price = float(ticker_data['bid'])
         try:
-            response = client.post_market_order(pair=PAIR, type='SELL', base_volume=amount)
+            client.post_market_order(pair=PAIR, type='SELL', base_volume=amount)
             logging.info(f'Sold {amount} BTC at {price} ZAR/BTC')
-            # logging.info(f'Sold {amount} BTC at {price} ZAR/BTC, order ID: {response["order_id"]}')
         except Exception as e:
             logging.error(f'Error executing sell order: {e}')
-    update_balances(ticker_data)
+    update_balances(ticker_data, True)
 
 
 # Mock trade function to print what would happen in a trade
@@ -285,6 +327,9 @@ signal.signal(signal.SIGINT, signal_handler)
 def trading_loop(true_trade):
     global ZAR_balance, BTC_balance  # Ensure the main function knows about the global variables
     old_confidence = None
+    ticker_data = get_ticker()
+    update_balances(ticker_data, True)
+
     while True:
         fee_info = get_fee_info()
         if not fee_info:
@@ -295,8 +340,7 @@ def trading_loop(true_trade):
         if not ticker_data:
             logging.error('Failed to retrieve ticker data')
             continue
-
-        update_balances(ticker_data)
+        update_balances(ticker_data, true_trade)
 
         order_book = get_order_book()
         if not order_book:
