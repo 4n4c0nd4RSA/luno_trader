@@ -50,6 +50,9 @@ wallet_values = []
 btc_values_in_zar = []
 zar_values = []
 
+since = int(time.time()*1000)-23*60*60*1000
+all_trades = []
+
 # Function to get the order book
 def get_order_book():
     retries = 5
@@ -64,8 +67,17 @@ def get_order_book():
 
 # Fetch BTC/ZAR price history
 def fetch_trade_history(pair='XBTZAR'):
-    res = client.list_trades(pair=pair)
-    return res['trades']
+    global since, all_trades
+    age_limit = int(time.time()*1000)-23*60*60*1000
+    res = client.list_trades(pair=pair, since=since)
+    all_trades.extend(res['trades'])
+    while len(res['trades']) == 100:
+        max_timestamp = max(entry['timestamp'] for entry in res['trades'])
+        since = max_timestamp + 1
+        res = client.list_trades(pair=pair, since=since)
+        all_trades.extend(res['trades'])
+    recent_trades = [trade for trade in all_trades if trade['timestamp'] >= age_limit]
+    return recent_trades
 
 # Process data into a DataFrame
 def process_data(candles):
@@ -143,10 +155,6 @@ def calculate_price_confidence():
         # Calculate the slope
         slope = y_diff / x_diff
         mapped_value = 1 / (1 + np.exp(-slope))
-        
-        mapped_value += 0.5
-        mapped_value = mapped_value / 2
-
         return mapped_value
     except Exception as e:
         logging.error(e)
