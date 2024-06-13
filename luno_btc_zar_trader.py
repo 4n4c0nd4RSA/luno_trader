@@ -195,7 +195,7 @@ def determine_action(ticker_data, confidence):
     current_btc_percentage = 0
     if (total_value_zar != 0):
         current_btc_percentage = btc_to_zar / total_value_zar
-    logging.info(f'BTC %: {current_btc_percentage}%')
+    # logging.info(f'BTC %: {current_btc_percentage}%')
 
     # Determine action based on the target confidence and threshold
     if current_btc_percentage < confidence - THRESHOLD:
@@ -222,18 +222,17 @@ def update_balances(ticker_data, true_trade):
                     ZAR_balance += float(balance['balance'])
                 elif balance['asset'] == 'XBT':
                     BTC_balance += float(balance['balance'])
-            logging.info(f'Updated ZAR balance: {ZAR_balance}')
-            logging.info(f'Updated BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+            # logging.info(f'Updated ZAR balance: {ZAR_balance}')
+            # logging.info(f'Updated BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
     except Exception as e:
         logging.error(f'Error fetching updated balances: {e}')
 
 # Function to execute an actual trade
 def execute_trade(order_type, amount, ticker_data, fee_info):
     global ZAR_balance, BTC_balance
-
+    logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
     min_trade_size = get_minimum_trade_sizes()
     amount = max(float(amount), min_trade_size)
-
     if order_type == 'Buy':
         price = float(ticker_data['ask'])
         try:
@@ -250,10 +249,11 @@ def execute_trade(order_type, amount, ticker_data, fee_info):
             logging.error(f'Error executing sell order: {e}')
     update_balances(ticker_data, True)
 
-
 # Mock trade function to print what would happen in a trade
 def mock_trade(order_type, amount, ticker_data, fee_info):
     global ZAR_balance, BTC_balance
+    logging.info(f"=================================")
+    logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
     amount = float(amount)
     if order_type == 'Buy':
         price = float(ticker_data['ask'])
@@ -265,9 +265,6 @@ def mock_trade(order_type, amount, ticker_data, fee_info):
             ZAR_balance -= total_cost
             BTC_balance += amount
             logging.info(f'Bought {amount} BTC at {price} ZAR/BTC')
-            logging.info(f'Cost: {cost} ZAR')
-            logging.info(f'Fee: {fee} ZAR')
-            logging.info(f'Total Cost: {total_cost} ZAR')
         else:
             logging.warning('Insufficient ZAR balance to complete the buy order')
     elif order_type == 'Sell':
@@ -280,9 +277,6 @@ def mock_trade(order_type, amount, ticker_data, fee_info):
             BTC_balance -= amount
             ZAR_balance += total_revenue
             logging.info(f'Sold {amount} BTC at {price} ZAR/BTC')
-            logging.info(f'Revenue: {revenue} ZAR')
-            logging.info(f'Fee: {fee} ZAR')
-            logging.info(f'Total Revenue: {total_revenue} ZAR')
         else:
             logging.warning('Insufficient BTC balance to complete the sell order')
     logging.info(f'New ZAR balance: {ZAR_balance}')
@@ -333,7 +327,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # Main function to check the ticker and place orders
 def trading_loop(true_trade):
-    global ZAR_balance, BTC_balance  # Ensure the main function knows about the global variables
+    global ZAR_balance, BTC_balance
     old_confidence = None
     ticker_data = get_ticker()
     update_balances(ticker_data, True)
@@ -360,12 +354,14 @@ def trading_loop(true_trade):
         if old_confidence is not None:
             conf_delta = confidence - old_confidence 
         old_confidence = confidence
-        logging.info(f" ")
-        logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
-        logging.info(f'Confidence in BTC: {confidence}')
-        logging.info(f'Confidence Delta: {conf_delta}')
 
         action = determine_action(ticker_data, confidence)
+
+        if abs(conf_delta) > 0.01 or action == 'Buy' or action == 'Sell':
+            logging.info(f"---------------------------------")
+            logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
+            logging.info(f'Confidence in BTC: {confidence}')
+            logging.info(f'Confidence Delta: {conf_delta}')
 
         if action == 'Buy':
             if true_trade:
@@ -377,13 +373,6 @@ def trading_loop(true_trade):
                 execute_trade('Sell', AMOUNT, ticker_data, fee_info)
             else:
                 mock_trade('Sell', AMOUNT, ticker_data, fee_info)
-        else:
-            logging.info('No action taken')
-        logging.info(f'Current ZAR balance: {ZAR_balance}')
-        logging.info(f'Current BTC balance: {BTC_balance}')
-        logging.info(f'Current Total balance: {ZAR_balance + BTC_balance * float(ticker_data["bid"])}')
-
-        # Update wallet values regardless of the action
         update_wallet_values(ticker_data)
 
         time.sleep(5)
