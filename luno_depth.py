@@ -8,7 +8,7 @@ from scipy.stats import linregress
 
 # Constants
 PAIR = 'XBTZAR'
-PRICE_DELTA = 400000
+PRICE_DELTA = 100000
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
 
 # Initialize logging
@@ -90,7 +90,19 @@ def update_plot(frame):
     # Adding trendline values as text
     plt.text(0.05, 0.05, f'Asks Trendline: {ask_slope:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='orange')
     plt.text(0.05, 0.10, f'Bids Trendline: {bid_slope:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='blue')
-    plt.text(0.05, 0.15, f'Confidence = {(-1*bid_slope)/((-1*bid_slope)+ask_slope):.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='green')
+    plt.text(0.05, 0.25, f'Asks Intercept: {ask_intercept:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='orange')
+    plt.text(0.05, 0.20, f'Bids Intercept: {bid_intercept:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='blue')
+
+    if ask_intercept < 0:
+        bid_intercept += abs(ask_intercept)
+        ask_intercept = 0
+    if bid_intercept < 0:
+        ask_intercept += abs(bid_intercept)
+        bid_intercept = 0
+    intercept_confidence = bid_intercept / (ask_intercept + bid_intercept)
+    trendline_confidence = (-1*bid_slope)/((-1*bid_slope)+ask_slope)
+    plt.text(0.05, 0.15, f'Trendline Confidence = {trendline_confidence:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='green')
+    plt.text(0.05, 0.30, f'Intercept Confidence = {intercept_confidence:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='green')
 
     plt.xlabel('Price (ZAR)')
     plt.ylabel('Cumulative Volume (BTC)')

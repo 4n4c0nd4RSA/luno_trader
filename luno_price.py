@@ -7,8 +7,8 @@ from matplotlib.animation import FuncAnimation
 
 # Initialize the Luno API client
 client = luno_python.client.Client()
-since = int(time.time()*1000)-23*60*60*1000
-age_limit = int(time.time()*1000)-23*60*60*1000
+since = int(time.time()*1000)-10*60*60*1000
+age_limit = int(time.time()*1000)-10*60*60*1000
 all_trades = []
 # Fetch BTC/ZAR price history
 def fetch_trade_history(pair='XBTZAR'):
@@ -36,7 +36,12 @@ def process_data(candles):
 
 # Update the plot
 def update_plot(frame):
-    candles = fetch_trade_history()
+    candles = None
+    while candles == None:
+        try:
+            candles = fetch_trade_history()
+        except:
+            time.sleep(5)
     df = process_data(candles)
     
     ax.clear()

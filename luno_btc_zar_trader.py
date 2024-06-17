@@ -17,7 +17,7 @@ API_KEY = 'xxx'
 API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
 AMOUNT = 0.0001  # Example amount of BTC to buy/sell
-RANGE = 400
+RANGE = 100
 THRESHOLD = 0.08
 
 # Initialize logging
@@ -68,7 +68,7 @@ def get_order_book():
 # Fetch BTC/ZAR price history
 def fetch_trade_history(pair='XBTZAR'):
     global since, all_trades
-    age_limit = int(time.time()*1000)-23*60*60*1000
+    age_limit = int(time.time()*1000)-10*60*60*1000
     res = client.list_trades(pair=pair, since=since)
     all_trades.extend(res['trades'])
     while len(res['trades']) == 100:
