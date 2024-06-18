@@ -106,8 +106,9 @@ def calculate_confidence(current_order_book, current_price):
             confidence_ = 0.5
         else:
             confidence_ = 2 * (total_demand_ / (total_supply_ + total_demand_))
-            slope_confidence_ = calculate_slope_confidence(asks_within_range, bids_within_range)
-            confidence_ += 2 * slope_confidence_
+            slope_confidence_, intercept_confidence_ = calculate_slope_confidence(asks_within_range, bids_within_range, current_price)
+            confidence_ += 1.5 * slope_confidence_
+            confidence_ += 0.5 * intercept_confidence_
             confidence_ += price_confidence_
             confidence_ = confidence_ / 5
         average_confidence += confidence_
@@ -115,7 +116,7 @@ def calculate_confidence(current_order_book, current_price):
     return average_confidence
 
 # Function to calculate confidence based on slope of order book data
-def calculate_slope_confidence(asks, bids):
+def calculate_slope_confidence(asks, bids, current_price):
     try:
         ask_prices = np.array([float(ask['price']) for ask in asks])
         ask_volumes = np.array([float(ask['volume']) for ask in asks])
@@ -124,21 +125,30 @@ def calculate_slope_confidence(asks, bids):
 
         # Check if ask_prices or bid_prices are empty
         if len(ask_prices) == 0 or len(bid_prices) == 0:
-            return 0.5  # or another default value
+            return 0.5, 0.5  # or another default value
 
         cumulative_ask_volumes = np.cumsum(ask_volumes)
         cumulative_bid_volumes = np.cumsum(bid_volumes)
 
-        ask_slope, _, _, _, _ = linregress(ask_prices, cumulative_ask_volumes)
-        bid_slope, _, _, _, _ = linregress(bid_prices, cumulative_bid_volumes)
+        ask_slope, ask_intercept, _, _, _ = linregress(ask_prices, cumulative_ask_volumes)
+        bid_slope, bid_intercept, _, _, _ = linregress(bid_prices, cumulative_bid_volumes)
+
+        # Calculate intercepts at the current price
+        asks_intercept_at_current_price = ask_slope * current_price + ask_intercept
+        bids_intercept_at_current_price = bid_slope * current_price + bid_intercept
 
         if ask_slope + (-1 * bid_slope) == 0:
             slope_confidence = 0.5
         else:
             slope_confidence = (-1 * bid_slope) / (ask_slope + (-1 * bid_slope))
-        return slope_confidence
+        
+        if asks_intercept_at_current_price + bids_intercept_at_current_price == 0:
+            intercept_confidence = 0.5
+        else:
+            intercept_confidence = bids_intercept_at_current_price / (asks_intercept_at_current_price + bids_intercept_at_current_price)
+        return slope_confidence, intercept_confidence
     except:
-        return 0.5
+        return 0.5, 0.5
 
 # Function to calculate price confidence
 def calculate_price_confidence():

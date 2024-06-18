@@ -49,7 +49,7 @@ def update_plot(frame):
         return
 
     ticker_data = get_ticker()
-    if ticker_data is None:
+    if (ticker_data is None):
         logging.error('Failed to retrieve ticker data')
         return
 
@@ -87,22 +87,25 @@ def update_plot(frame):
     plt.plot(ask_prices, ask_slope * ask_prices + ask_intercept, label='Asks Trendline', color='orange', linestyle='--')
     plt.plot(bid_prices, bid_slope * bid_prices + bid_intercept, label='Bids Trendline', color='blue', linestyle='--')
 
+    # Calculate intercepts at the current price
+    asks_intercept_at_current_price = ask_slope * current_price + ask_intercept
+    bids_intercept_at_current_price = bid_slope * current_price + bid_intercept
+
+    # Plot intercepts at the current price
+    plt.scatter([current_price], [asks_intercept_at_current_price], color='orange', marker='o', label='Ask Intercept at Current Price')
+    plt.scatter([current_price], [bids_intercept_at_current_price], color='blue', marker='o', label='Bid Intercept at Current Price')
+
     # Adding trendline values as text
     plt.text(0.05, 0.05, f'Asks Trendline: {ask_slope:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='orange')
     plt.text(0.05, 0.10, f'Bids Trendline: {bid_slope:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='blue')
-    plt.text(0.05, 0.25, f'Asks Intercept: {ask_intercept:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='orange')
-    plt.text(0.05, 0.20, f'Bids Intercept: {bid_intercept:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='blue')
+    plt.text(0.05, 0.15, f'Asks Intercept at Current Price: {asks_intercept_at_current_price:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='orange')
+    plt.text(0.05, 0.20, f'Bids Intercept at Current Price: {bids_intercept_at_current_price:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='blue')
 
-    if ask_intercept < 0:
-        bid_intercept += abs(ask_intercept)
-        ask_intercept = 0
-    if bid_intercept < 0:
-        ask_intercept += abs(bid_intercept)
-        bid_intercept = 0
-    intercept_confidence = bid_intercept / (ask_intercept + bid_intercept)
+    intercept_confidence = bids_intercept_at_current_price / (asks_intercept_at_current_price + bids_intercept_at_current_price)
     trendline_confidence = (-1*bid_slope)/((-1*bid_slope)+ask_slope)
-    plt.text(0.05, 0.15, f'Trendline Confidence = {trendline_confidence:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='green')
+    plt.text(0.05, 0.25, f'Trendline Confidence = {trendline_confidence:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='green')
     plt.text(0.05, 0.30, f'Intercept Confidence = {intercept_confidence:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='green')
+
 
     plt.xlabel('Price (ZAR)')
     plt.ylabel('Cumulative Volume (BTC)')

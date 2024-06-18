@@ -84,6 +84,7 @@ def update_plot(frame):
     plt.ylabel('Confidence')
     plt.title('Confidence by Price Range')
     plt.grid(True)
+    plt.axhline(y=0.5, color='red', linestyle='--')
 
 # Set up the plot
 fig, ax = plt.subplots()
