@@ -105,11 +105,11 @@ def calculate_confidence(current_order_book, current_price):
         if total_supply_ + total_demand_ == 0:
             confidence_ = 0.5
         else:
-            confidence_ = total_demand_ / (total_supply_ + total_demand_)
+            confidence_ = 2 * (total_demand_ / (total_supply_ + total_demand_))
             slope_confidence_ = calculate_slope_confidence(asks_within_range, bids_within_range)
-            confidence_ += slope_confidence_
+            confidence_ += 2 * slope_confidence_
             confidence_ += price_confidence_
-            confidence_ = confidence_ / 3
+            confidence_ = confidence_ / 5
         average_confidence += confidence_
     average_confidence = average_confidence / RANGE
     return average_confidence
