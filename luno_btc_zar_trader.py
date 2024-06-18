@@ -106,12 +106,17 @@ def calculate_confidence(current_order_book, current_price):
         if total_supply_ + total_demand_ == 0:
             confidence_ = 0.5
         else:
-            confidence_ = 2 * (total_demand_ / (total_supply_ + total_demand_))
+            demand_confidence_ = (total_demand_ / (total_supply_ + total_demand_))
+            confidence_ = 2 * demand_confidence_
             slope_confidence_, intercept_confidence_ = calculate_slope_confidence(asks_within_range, bids_within_range, current_price)
-            confidence_ += 1.5 * slope_confidence_
-            confidence_ += 0.5 * intercept_confidence_
-            confidence_ += price_confidence_
-            confidence_ = confidence_ / 5
+            confidence_ += 1.75 * slope_confidence_
+            confidence_ += 0.25 * intercept_confidence_
+            confidence_ += 0.5 * price_confidence_
+            # print(f'demand_confidence_: {demand_confidence_}')
+            # print(f'slope_confidence_: {slope_confidence_}')
+            # print(f'intercept_confidence_: {intercept_confidence_}')
+            # print(f'price_confidence_: {price_confidence_}')
+            confidence_ = confidence_ / 4.5
         average_confidence += confidence_
     average_confidence = average_confidence / RANGE
     return average_confidence
@@ -147,6 +152,10 @@ def calculate_slope_confidence(asks, bids, current_price):
             intercept_confidence = 0.5
         else:
             intercept_confidence = bids_intercept_at_current_price / (asks_intercept_at_current_price + bids_intercept_at_current_price)
+            if slope_confidence < 0:
+                slope_confidence = 0
+            if intercept_confidence < 0:
+                intercept_confidence = 0
         return slope_confidence, intercept_confidence
     except:
         return 0.5, 0.5
