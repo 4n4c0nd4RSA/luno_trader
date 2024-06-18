@@ -19,6 +19,7 @@ PAIR = 'XBTZAR'
 AMOUNT = 0.0001  # Example amount of BTC to buy/sell
 RANGE = 100
 THRESHOLD = 0.08
+CONF_DELTA_LIMIT = 0.02
 
 # Initialize logging
 logging.basicConfig(filename='trading_bot.log', level=logging.INFO, format='%(asctime)s %(message)s')
@@ -373,16 +374,17 @@ def trading_loop(true_trade):
             logging.info(f'Confidence in BTC: {confidence}')
             logging.info(f'Confidence Delta: {conf_delta}')
 
-        if action == 'Buy':
-            if true_trade:
-                execute_trade('Buy', AMOUNT, ticker_data, fee_info)
-            else:
-                mock_trade('Buy', AMOUNT, ticker_data, fee_info)
-        elif action == 'Sell':
-            if true_trade:
-                execute_trade('Sell', AMOUNT, ticker_data, fee_info)
-            else:
-                mock_trade('Sell', AMOUNT, ticker_data, fee_info)
+        if abs(conf_delta) < CONF_DELTA_LIMIT:
+            if action == 'Buy':
+                if true_trade:
+                    execute_trade('Buy', AMOUNT, ticker_data, fee_info)
+                else:
+                    mock_trade('Buy', AMOUNT, ticker_data, fee_info)
+            elif action == 'Sell':
+                if true_trade:
+                    execute_trade('Sell', AMOUNT, ticker_data, fee_info)
+                else:
+                    mock_trade('Sell', AMOUNT, ticker_data, fee_info)
         update_wallet_values(ticker_data)
 
         time.sleep(5)
