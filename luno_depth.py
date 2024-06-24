@@ -8,7 +8,7 @@ from scipy.stats import linregress
 
 # Constants
 PAIR = 'XBTZAR'
-PRICE_DELTA = 100000
+PRICE_DELTA = 400000
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
 
 # Initialize logging
@@ -101,7 +101,7 @@ def update_plot(frame):
     plt.text(0.05, 0.15, f'Asks Intercept at Current Price: {asks_intercept_at_current_price:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='orange')
     plt.text(0.05, 0.20, f'Bids Intercept at Current Price: {bids_intercept_at_current_price:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='blue')
 
-    intercept_confidence = bids_intercept_at_current_price / (asks_intercept_at_current_price + bids_intercept_at_current_price)
+    intercept_confidence = 1 / (1 + np.exp(-(0.125 * (bids_intercept_at_current_price - asks_intercept_at_current_price))))
     trendline_confidence = (-1*bid_slope)/((-1*bid_slope)+ask_slope)
     plt.text(0.05, 0.25, f'Trendline Confidence = {trendline_confidence:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='green')
     plt.text(0.05, 0.30, f'Intercept Confidence = {intercept_confidence:.5f}', transform=ax.transAxes, fontsize=10, verticalalignment='top', color='green')

@@ -7,7 +7,7 @@ from matplotlib.animation import FuncAnimation
 
 # Constants
 PAIR = 'XBTZAR'
-PRICE_DELTA_VALUE = 100000
+PRICE_DELTA_VALUE = 400000
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
 
 # Initialize logging
@@ -74,6 +74,9 @@ def update_plot(frame):
         confidences.append(confidence_100)
         labels.append(i)
 
+    # Calculate the average confidence
+    average_confidence = np.mean(confidences)
+
     # Clear the current plot
     plt.cla()
 
@@ -84,7 +87,9 @@ def update_plot(frame):
     plt.ylabel('Confidence')
     plt.title('Confidence by Price Range')
     plt.grid(True)
-    plt.axhline(y=0.5, color='red', linestyle='--')
+    plt.axhline(y=0.5, color='red', linestyle='--', label='Neutral Confidence')
+    plt.axhline(y=average_confidence, color='green', linestyle='-', label=f'Average Confidence: {average_confidence:.2f}')
+    plt.legend()
 
 # Set up the plot
 fig, ax = plt.subplots()

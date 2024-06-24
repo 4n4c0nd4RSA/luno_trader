@@ -17,7 +17,7 @@ API_KEY = 'xxx'
 API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
 AMOUNT = 0.0001  # Example amount of BTC to buy/sell
-RANGE = 100
+RANGE = 400
 THRESHOLD = 0.08
 CONF_DELTA_LIMIT = 0.02
 
@@ -42,7 +42,7 @@ if api_key_secret == 'xxx':
 client = luno.Client(api_key_id=api_key_id, api_key_secret=api_key_secret)
 
 # Initialize wallet balances
-ZAR_balance = 0  # Initial ZAR balance
+ZAR_balance = 2000  # Initial ZAR balance
 BTC_balance = 0  # Initial BTC balance
 
 # Lists to store wallet values over time
@@ -106,17 +106,17 @@ def calculate_confidence(current_order_book, current_price):
         if total_supply_ + total_demand_ == 0:
             confidence_ = 0.5
         else:
-            demand_confidence_ = (total_demand_ / (total_supply_ + total_demand_))
-            confidence_ = 2 * demand_confidence_
-            slope_confidence_, intercept_confidence_ = calculate_slope_confidence(asks_within_range, bids_within_range, current_price)
-            confidence_ += 1.75 * slope_confidence_
-            confidence_ += 0.25 * intercept_confidence_
-            confidence_ += 0.5 * price_confidence_
+            # demand_confidence_ = (total_demand_ / (total_supply_ + total_demand_))
+            # confidence_ = 2 * demand_confidence_
+            # slope_confidence_, intercept_confidence_ = calculate_slope_confidence(asks_within_range, bids_within_range, current_price)
+            # confidence_ += 1.75 * slope_confidence_
+            # confidence_ += 0.25 * intercept_confidence_
+            confidence_ = price_confidence_
             # print(f'demand_confidence_: {demand_confidence_}')
             # print(f'slope_confidence_: {slope_confidence_}')
             # print(f'intercept_confidence_: {intercept_confidence_}')
             # print(f'price_confidence_: {price_confidence_}')
-            confidence_ = confidence_ / 4.5
+            # confidence_ = confidence_ / 4.5
         average_confidence += confidence_
     average_confidence = average_confidence / RANGE
     return average_confidence
@@ -230,7 +230,7 @@ def get_minimum_trade_sizes():
     return 0.0002  # default value in case of failure
 
 # Update balances by fetching latest balances from the exchange
-def update_balances(ticker_data, true_trade):
+def update_balances(ticker_data, true_trade, log=False):
     global ZAR_balance, BTC_balance
     try:
         if true_trade:
@@ -242,8 +242,9 @@ def update_balances(ticker_data, true_trade):
                     ZAR_balance += float(balance['balance'])
                 elif balance['asset'] == 'XBT':
                     BTC_balance += float(balance['balance'])
-            # logging.info(f'Updated ZAR balance: {ZAR_balance}')
-            # logging.info(f'Updated BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+        if log:
+            logging.info(f'Updated ZAR balance: {ZAR_balance}')
+            logging.info(f'Updated BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
     except Exception as e:
         logging.error(f'Error fetching updated balances: {e}')
 
@@ -350,7 +351,7 @@ def trading_loop(true_trade):
     global ZAR_balance, BTC_balance
     old_confidence = None
     ticker_data = get_ticker()
-    update_balances(ticker_data, True)
+    update_balances(ticker_data, true_trade)
 
     while True:
         fee_info = get_fee_info()
