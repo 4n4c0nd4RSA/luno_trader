@@ -205,7 +205,7 @@ def get_fee_info():
     return None
 
 # Function to determine the action (Buy, Sell, or Nothing) based on confidence
-def determine_action(ticker_data, confidence):
+def determine_action(ticker_data, confidence, conf_delta):
     global ZAR_balance, BTC_balance
     # Calculate current BTC value in ZAR
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
@@ -218,7 +218,7 @@ def determine_action(ticker_data, confidence):
     # logging.info(f'BTC %: {current_btc_percentage}%')
 
     # Determine action based on the target confidence and threshold
-    if current_btc_percentage < confidence - THRESHOLD:
+    if current_btc_percentage < confidence - THRESHOLD and abs(conf_delta) > 0.1:
         return 'Buy'
     elif current_btc_percentage > confidence + THRESHOLD:
         return 'Sell'
@@ -376,7 +376,7 @@ def trading_loop(true_trade):
             conf_delta = confidence - old_confidence 
         old_confidence = confidence
 
-        action = determine_action(ticker_data, confidence)
+        action = determine_action(ticker_data, confidence, conf_delta)
 
         if abs(conf_delta) > 0.01 or action == 'Buy' or action == 'Sell':
             logging.info(f"---------------------------------")
@@ -384,17 +384,16 @@ def trading_loop(true_trade):
             logging.info(f'Confidence in BTC: {confidence}')
             logging.info(f'Confidence Delta: {conf_delta}')
 
-        if abs(conf_delta) < CONF_DELTA_LIMIT:
-            if action == 'Buy':
-                if true_trade:
-                    execute_trade('Buy', AMOUNT, ticker_data, fee_info)
-                else:
-                    mock_trade('Buy', AMOUNT, ticker_data, fee_info)
-            elif action == 'Sell':
-                if true_trade:
-                    execute_trade('Sell', AMOUNT, ticker_data, fee_info)
-                else:
-                    mock_trade('Sell', AMOUNT, ticker_data, fee_info)
+        if action == 'Buy':
+            if true_trade:
+                execute_trade('Buy', AMOUNT, ticker_data, fee_info)
+            else:
+                mock_trade('Buy', AMOUNT, ticker_data, fee_info)
+        elif action == 'Sell':
+            if true_trade:
+                execute_trade('Sell', AMOUNT, ticker_data, fee_info)
+            else:
+                mock_trade('Sell', AMOUNT, ticker_data, fee_info)
         update_wallet_values(ticker_data)
 
         time.sleep(5)
