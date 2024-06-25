@@ -218,7 +218,7 @@ def determine_action(ticker_data, confidence, conf_delta):
     # logging.info(f'BTC %: {current_btc_percentage}%')
 
     # Determine action based on the target confidence and threshold
-    if current_btc_percentage < confidence - THRESHOLD and abs(conf_delta) > 0.1:
+    if current_btc_percentage < confidence - THRESHOLD and abs(conf_delta) < 0.1:
         return 'Buy'
     elif current_btc_percentage > confidence + THRESHOLD:
         return 'Sell'
