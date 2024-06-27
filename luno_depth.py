@@ -5,10 +5,11 @@ import time
 import logging
 from matplotlib.animation import FuncAnimation
 from scipy.stats import linregress
+from luno_btc_zar_trader import RANGE
 
 # Constants
 PAIR = 'XBTZAR'
-PRICE_DELTA = 400000
+PRICE_DELTA = 1000 * RANGE
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
 
 # Initialize logging

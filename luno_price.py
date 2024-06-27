@@ -4,24 +4,12 @@ import pandas as pd
 import numpy as np
 import time
 from matplotlib.animation import FuncAnimation
+from luno_btc_zar_trader import fetch_trade_history
 
 # Initialize the Luno API client
 client = luno_python.client.Client()
 since = int(time.time()*1000)-10*60*60*1000
-age_limit = int(time.time()*1000)-10*60*60*1000
 all_trades = []
-# Fetch BTC/ZAR price history
-def fetch_trade_history(pair='XBTZAR'):
-    global since, all_trades
-    res = client.list_trades(pair=pair, since=since)
-    all_trades.extend(res['trades'])
-    while len(res['trades']) == 100:
-        max_timestamp = max(entry['timestamp'] for entry in res['trades'])
-        since = max_timestamp + 1
-        res = client.list_trades(pair=pair, since=since)
-        all_trades.extend(res['trades'])
-    recent_trades = [trade for trade in all_trades if trade['timestamp'] >= age_limit]
-    return recent_trades
 
 # Process data into a DataFrame
 def process_data(candles):

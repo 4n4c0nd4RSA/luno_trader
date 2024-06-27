@@ -16,9 +16,8 @@ from scipy.stats import linregress
 API_KEY = 'xxx'
 API_SECRET = 'xxx'
 PAIR = 'XBTZAR'
-AMOUNT = 0.0001  # Example amount of BTC to buy/sell
-RANGE = 400
-THRESHOLD = 0.08
+AMOUNT = 0.0002  # Example amount of BTC to buy/sell
+RANGE = 200
 CONF_DELTA_LIMIT = 0.02
 
 # Initialize logging
@@ -204,8 +203,7 @@ def get_fee_info():
             time.sleep(2 ** i)  # Exponential backoff
     return None
 
-# Function to determine the action (Buy, Sell, or Nothing) based on confidence
-def determine_action(ticker_data, confidence, conf_delta):
+def get_current_btc_percentage(ticker_data):
     global ZAR_balance, BTC_balance
     # Calculate current BTC value in ZAR
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
@@ -215,12 +213,21 @@ def determine_action(ticker_data, confidence, conf_delta):
     current_btc_percentage = 0
     if (total_value_zar != 0):
         current_btc_percentage = btc_to_zar / total_value_zar
-    # logging.info(f'BTC %: {current_btc_percentage}%')
+    return current_btc_percentage
+
+# Function to determine the action (Buy, Sell, or Nothing) based on confidence
+def determine_action(ticker_data, confidence, conf_delta):
+    global ZAR_balance, BTC_balance
+    # Calculate current BTC value in ZAR
+    current_btc_percentage = get_current_btc_percentage(ticker_data)
 
     # Determine action based on the target confidence and threshold
-    if current_btc_percentage < confidence - THRESHOLD and abs(conf_delta) < 0.1:
+    btc_to_zar = BTC_balance * float(ticker_data['bid'])
+    total_value_zar = ZAR_balance + btc_to_zar
+    threshold = AMOUNT * float(ticker_data['bid']) / total_value_zar
+    if current_btc_percentage < confidence - threshold and abs(conf_delta) < 0.1:
         return 'Buy'
-    elif current_btc_percentage > confidence + THRESHOLD:
+    elif current_btc_percentage > confidence + threshold:
         return 'Sell'
     else:
         return 'Nothing'
@@ -269,6 +276,8 @@ def execute_trade(order_type, amount, ticker_data, fee_info):
         except Exception as e:
             logging.error(f'Error executing sell order: {e}')
     update_balances(ticker_data, True)
+    current_btc_percentage = get_current_btc_percentage(ticker_data)
+    logging.info(f'BTC wallet %: {current_btc_percentage}')
 
 # Mock trade function to print what would happen in a trade
 def mock_trade(order_type, amount, ticker_data, fee_info):
@@ -302,6 +311,8 @@ def mock_trade(order_type, amount, ticker_data, fee_info):
             logging.warning('Insufficient BTC balance to complete the sell order')
     logging.info(f'New ZAR balance: {ZAR_balance}')
     logging.info(f'New BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+    current_btc_percentage = get_current_btc_percentage(ticker_data)
+    logging.info(f'BTC wallet %: {current_btc_percentage}')
 
 # Function to update wallet values for plotting
 def update_wallet_values(ticker_data):
@@ -379,8 +390,12 @@ def trading_loop(true_trade):
         action = determine_action(ticker_data, confidence, conf_delta)
 
         if abs(conf_delta) > 0.01 or action == 'Buy' or action == 'Sell':
+            btc_to_zar = BTC_balance * float(ticker_data['bid'])
+            total_value_zar = ZAR_balance + btc_to_zar
+            current_btc_percentage = btc_to_zar / total_value_zar
             logging.info(f"---------------------------------")
             logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
+            logging.info(f'BTC wallet %: {current_btc_percentage}')
             logging.info(f'Confidence in BTC: {confidence}')
             logging.info(f'Confidence Delta: {conf_delta}')
 
