@@ -11,34 +11,25 @@ import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation
 from scipy.stats import linregress
+from cryptography.fernet import Fernet
 
 # Constants
-API_KEY = 'xxx'
-API_SECRET = 'xxx'
+API_KEY = os.getenv('LUNO_API_KEY_ID')
+API_SECRET = os.getenv('LUNO_API_KEY_SECRET')
 PAIR = 'XBTZAR'
 AMOUNT = 0.0002  # Example amount of BTC to buy/sell
 RANGE = 200
 CONF_DELTA_LIMIT = 0.02
 
+# start time
+start_time = time.gmtime()
+
 # Initialize logging
 logging.basicConfig(filename='trading_bot.log', level=logging.INFO, format='%(asctime)s %(message)s')
 
-api_key_id = API_KEY
-if api_key_id == 'xxx':
-    try:
-        api_key_id = os.getenv('LUNO_API_KEY_ID')
-    except:
-        api_key_id = 'xxx'
-
-api_key_secret = API_SECRET
-if api_key_secret == 'xxx':
-    try:
-        api_key_secret = os.getenv('LUNO_API_KEY_SECRET')
-    except:
-        api_key_secret = 'xxx'
 
 # Initialize the Luno API client
-client = luno.Client(api_key_id=api_key_id, api_key_secret=api_key_secret)
+client = luno.Client(api_key_id=API_KEY, api_key_secret=API_SECRET)
 
 # Initialize wallet balances
 ZAR_balance = 2000  # Initial ZAR balance
@@ -105,17 +96,7 @@ def calculate_confidence(current_order_book, current_price):
         if total_supply_ + total_demand_ == 0:
             confidence_ = 0.5
         else:
-            # demand_confidence_ = (total_demand_ / (total_supply_ + total_demand_))
-            # confidence_ = 2 * demand_confidence_
-            # slope_confidence_, intercept_confidence_ = calculate_slope_confidence(asks_within_range, bids_within_range, current_price)
-            # confidence_ += 1.75 * slope_confidence_
-            # confidence_ += 0.25 * intercept_confidence_
             confidence_ = price_confidence_
-            # print(f'demand_confidence_: {demand_confidence_}')
-            # print(f'slope_confidence_: {slope_confidence_}')
-            # print(f'intercept_confidence_: {intercept_confidence_}')
-            # print(f'price_confidence_: {price_confidence_}')
-            # confidence_ = confidence_ / 4.5
         average_confidence += confidence_
     average_confidence = average_confidence / RANGE
     return average_confidence
@@ -177,7 +158,7 @@ def calculate_price_confidence():
         return mapped_value
     except Exception as e:
         logging.error(e)
-        return 0.5
+        return calculate_price_confidence()
 
 # Function to get the latest ticker information
 def get_ticker():
@@ -329,24 +310,37 @@ def update_wallet_values(ticker_data):
     btc_values_in_zar.append(btc_to_zar)
     zar_values.append(ZAR_balance)
 
+    # Ensure all lists are the same length
+    min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values))
+    time_steps = time_steps[:min_length]
+    wallet_values = wallet_values[:min_length]
+    btc_values_in_zar = btc_values_in_zar[:min_length]
+    zar_values = zar_values[:min_length]
+
 # Function to plot wallet values over time
 def plot_wallet_values():
-    plt.plot(time_steps, wallet_values, label='Wallet Value in ZAR')
+    # Convert Unix timestamps to pandas datetime
+    time_labels = pd.to_datetime(time_steps, unit='s')
+
+    plt.plot(time_labels, wallet_values, label='Wallet Value in ZAR')
     plt.xlabel('Time')
     plt.ylabel('Wallet Value (ZAR)')
     plt.title('Wallet Value Over Time')
+    plt.xticks(rotation=45)
     plt.legend()
     plt.show()
 
 # Function to update the plot
 def update_plot(frame):
     plt.cla()  # Clear the current axes
-    plt.plot(time_steps, wallet_values, label='Total Wallet Value in ZAR')
-    plt.plot(time_steps, btc_values_in_zar, label='BTC Value in ZAR')
-    plt.plot(time_steps, zar_values, label='ZAR Value')
+    time_labels = pd.to_datetime(time_steps, unit='s')
+    plt.plot(time_labels, wallet_values, label='Total Wallet Value in ZAR')
+    plt.plot(time_labels, btc_values_in_zar, label='BTC Value in ZAR')
+    plt.plot(time_labels, zar_values, label='ZAR Value')
     plt.xlabel('Time')
     plt.ylabel('Value (ZAR)')
     plt.title('Wallet Values Over Time')
+    plt.xticks(rotation=45)
     plt.legend()
 
 # Graceful shutdown handler
@@ -379,7 +373,7 @@ def trading_loop(true_trade):
         order_book = get_order_book()
         if not order_book:
             logging.error('Failed to retrieve order book')
-            continue
+            continue  # Skip the rest of the loop iteration and try again
 
         conf_delta = 0
         confidence = calculate_confidence(order_book, float(ticker_data['bid']))
@@ -425,5 +419,5 @@ trading_thread.start()
 
 if __name__ == '__main__':
     fig = plt.figure()
-    ani = FuncAnimation(fig, update_plot, interval=5000)  # Update every second
+    ani = FuncAnimation(fig, update_plot, interval=5000, cache_frame_data=False)  # Update every second
     plt.show()  # Show the plot
