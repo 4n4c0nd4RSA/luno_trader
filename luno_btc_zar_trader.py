@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation
-from scipy.stats import linregress
-from cryptography.fernet import Fernet
+from scipy.stats import linregress 
 
 # Constants
 API_KEY = os.getenv('LUNO_API_KEY_ID')
@@ -223,6 +222,9 @@ def update_balances(ticker_data, true_trade, log=False):
     try:
         if true_trade:
             balance_response = client.get_balances(assets=['ZAR', 'XBT'])
+            while balance_response == None or balance_response['balance'] == None:
+                time.sleep(1)
+                balance_response = client.get_balances(assets=['ZAR', 'XBT'])
             ZAR_balance = 0
             BTC_balance = 0
             for balance in balance_response['balance']:
@@ -332,16 +334,19 @@ def plot_wallet_values():
 
 # Function to update the plot
 def update_plot(frame):
-    plt.cla()  # Clear the current axes
-    time_labels = pd.to_datetime(time_steps, unit='s')
-    plt.plot(time_labels, wallet_values, label='Total Wallet Value in ZAR')
-    plt.plot(time_labels, btc_values_in_zar, label='BTC Value in ZAR')
-    plt.plot(time_labels, zar_values, label='ZAR Value')
-    plt.xlabel('Time')
-    plt.ylabel('Value (ZAR)')
-    plt.title('Wallet Values Over Time')
-    plt.xticks(rotation=45)
-    plt.legend()
+    try:
+        plt.cla()  # Clear the current axes
+        time_labels = pd.to_datetime(time_steps, unit='s')
+        plt.plot(time_labels, wallet_values, label='Total Wallet Value in ZAR')
+        plt.plot(time_labels, btc_values_in_zar, label='BTC Value in ZAR')
+        plt.plot(time_labels, zar_values, label='ZAR Value')
+        plt.xlabel('Time')
+        plt.ylabel('Value (ZAR)')
+        plt.title('Wallet Values Over Time')
+        plt.xticks(rotation=45)
+        plt.legend()
+    except:
+        return
 
 # Graceful shutdown handler
 def signal_handler(sig, frame):
