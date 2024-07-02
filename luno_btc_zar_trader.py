@@ -80,26 +80,6 @@ def process_data(candles):
     df = pd.DataFrame(data, columns=['Timestamp', 'Price', 'Volume'])
     return df.set_index('Timestamp')
 
-# Function to calculate confidence based on order book history
-def calculate_confidence(current_order_book, current_price):
-    average_confidence = 0
-    price_confidence_ = calculate_price_confidence()
-    for i in range(1, RANGE):
-        currency_range = i * 1000
-        asks_within_range = [ask for ask in current_order_book['asks'] if current_price - currency_range <= float(ask['price']) <= current_price + currency_range]
-        bids_within_range = [bid for bid in current_order_book['bids'] if current_price - currency_range <= float(bid['price']) <= current_price + currency_range]
-
-        total_supply_ = sum(float(ask['volume']) for ask in asks_within_range)
-        total_demand_ = sum(float(bid['volume']) for bid in bids_within_range)
-
-        if total_supply_ + total_demand_ == 0:
-            confidence_ = 0.5
-        else:
-            confidence_ = price_confidence_
-        average_confidence += confidence_
-    average_confidence = average_confidence / RANGE
-    return average_confidence
-
 # Function to calculate confidence based on slope of order book data
 def calculate_slope_confidence(asks, bids, current_price):
     try:
@@ -157,6 +137,7 @@ def calculate_price_confidence():
         return mapped_value
     except Exception as e:
         logging.error(e)
+        time.sleep(60)
         return calculate_price_confidence()
 
 # Function to get the latest ticker information
@@ -381,7 +362,7 @@ def trading_loop(true_trade):
             continue  # Skip the rest of the loop iteration and try again
 
         conf_delta = 0
-        confidence = calculate_confidence(order_book, float(ticker_data['bid']))
+        confidence = calculate_price_confidence()
         if old_confidence is not None:
             conf_delta = confidence - old_confidence 
         old_confidence = confidence
