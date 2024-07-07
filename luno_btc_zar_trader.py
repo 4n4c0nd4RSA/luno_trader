@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation
+from matplotlib.ticker import FuncFormatter
 from scipy.stats import linregress 
 
 # Constants
@@ -37,6 +38,8 @@ time_steps = []
 wallet_values = []
 btc_values_in_zar = []
 zar_values = []
+confidence_values = []
+price_values = []
 
 since = int(time.time()*1000)-23*60*60*1000
 all_trades = []
@@ -267,26 +270,39 @@ def mock_trade(order_type, ticker_data, fee_info):
     logging.info(f'BTC wallet %: {current_btc_percentage}')
 
 # Function to update wallet values for plotting
-def update_wallet_values(ticker_data):
-    global ZAR_balance, BTC_balance, time_steps, wallet_values, btc_values_in_zar, zar_values
+def update_wallet_values(ticker_data, confidence):
+    global ZAR_balance, BTC_balance, time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, price_values
 
     # Calculate current BTC value in ZAR
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
     total_value_zar = ZAR_balance + btc_to_zar
 
-    # Store the current time and wallet value in ZAR
+    # Store the current time, wallet value in ZAR, confidence, and price
     current_time = time.time()
+    current_price = float(ticker_data['bid'])  # Use 'bid' price as current price
     time_steps.append(current_time)
     wallet_values.append(total_value_zar)
     btc_values_in_zar.append(btc_to_zar)
     zar_values.append(ZAR_balance)
+    confidence_values.append(confidence)
+    price_values.append(current_price)
 
     # Ensure all lists are the same length
-    min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values))
+    min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(price_values))
     time_steps = time_steps[:min_length]
     wallet_values = wallet_values[:min_length]
     btc_values_in_zar = btc_values_in_zar[:min_length]
     zar_values = zar_values[:min_length]
+    confidence_values = confidence_values[:min_length]
+    price_values = price_values[:min_length]
+
+def format_large_number(x, pos):
+    if x >= 1e6:
+        return f'{x/1e6:.3f}M'
+    elif x >= 1e3:
+        return f'{x/1e3:.3f}K'
+    else:
+        return f'{x:.0f}'
 
 # Function to plot wallet values over time
 def plot_wallet_values():
@@ -304,18 +320,51 @@ def plot_wallet_values():
 # Function to update the plot
 def update_plot(frame):
     try:
-        plt.cla()  # Clear the current axes
-        time_labels = pd.to_datetime(time_steps, unit='s')
-        plt.plot(time_labels, wallet_values, label='Total Wallet Value in ZAR')
-        plt.plot(time_labels, btc_values_in_zar, label='BTC Value in ZAR')
-        plt.plot(time_labels, zar_values, label='ZAR Value')
-        plt.xlabel('Time')
-        plt.ylabel('Value (ZAR)')
-        plt.title('Wallet Values Over Time')
-        plt.xticks(rotation=45)
-        plt.legend()
-    except:
-        return
+        fig.clear()
+        
+        # Create three subplots
+        ax1 = fig.add_subplot(311)  # Top subplot for wallet values
+        ax2 = fig.add_subplot(312)  # Middle subplot for confidence
+        ax3 = fig.add_subplot(313)  # Bottom subplot for price
+
+        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values))
+        
+        time_labels = pd.to_datetime(time_steps[:min_length], unit='s')
+        
+        # Plot wallet values on the top subplot
+        ax1.plot(time_labels, wallet_values[:min_length], label='Total Wallet Value in ZAR')
+        ax1.plot(time_labels, btc_values_in_zar[:min_length], label='BTC Value in ZAR')
+        ax1.plot(time_labels, zar_values[:min_length], label='ZAR Value')
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('Value (ZAR)')
+        ax1.set_title('Wallet Values Over Time')
+        ax1.legend()
+        ax1.tick_params(axis='x', rotation=45)
+        ax1.yaxis.set_major_formatter(FuncFormatter(format_large_number))
+        
+        # Plot confidence on the middle subplot
+        current_confidence = confidence_values[-1] if confidence_values else 0
+        ax2.plot(time_labels, confidence_values, label=f'Confidence ({current_confidence:.2f})', color='purple')
+        ax2.axhline(y=0.5, color='r', linestyle='--', label='Midpoint (0.5)')  # Add dashed middle line
+        ax2.set_xlabel('Time')
+        ax2.set_ylabel('Confidence')
+        ax2.set_title('Confidence Over Time')
+        ax2.set_ylim(0, 1)  # Set y-axis limits for confidence (0 to 1)
+        ax2.legend()
+        ax2.tick_params(axis='x', rotation=45)
+        
+        # Plot price on the bottom subplot
+        ax3.plot(time_labels, price_values, label='BTC Price', color='green')
+        ax3.set_xlabel('Time')
+        ax3.set_ylabel('Price (ZAR)')
+        ax3.set_title('BTC Price Over Time')
+        ax3.legend()
+        ax3.tick_params(axis='x', rotation=45)
+        ax3.yaxis.set_major_formatter(FuncFormatter(format_large_number))
+        
+        plt.tight_layout()  # Adjust the layout to prevent overlap
+    except Exception as e:
+        logging.error(f"Error updating plot: {e}")
 
 # Graceful shutdown handler
 def signal_handler(sig, frame):
@@ -377,7 +426,7 @@ def trading_loop(true_trade):
                 execute_trade('Sell', ticker_data)
             else:
                 mock_trade('Sell', ticker_data, fee_info)
-        update_wallet_values(ticker_data)
+        update_wallet_values(ticker_data, confidence)
 
         time.sleep(5)
 
@@ -392,6 +441,6 @@ trading_thread.daemon = True
 trading_thread.start()
 
 if __name__ == '__main__':
-    fig = plt.figure()
+    fig = plt.figure(figsize=(12, 15))
     ani = FuncAnimation(fig, update_plot, interval=5000, cache_frame_data=False)  # Update every second
     plt.show()  # Show the plot

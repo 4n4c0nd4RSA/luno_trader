@@ -1,22 +1,25 @@
 # Luno BTC/ZAR Trader
 
-This project is a simple trading bot for the Luno cryptocurrency exchange, designed to monitor the BTC/ZAR trading pair and make trading decisions based on historical order book data. The bot calculates a confidence level and adjusts the BTC/ZAR ratio in the wallet accordingly. It includes features to record order book history, determine trading actions, and visualize wallet value over time.
+This project is a trading bot for the Luno cryptocurrency exchange, designed to monitor the BTC/ZAR trading pair and make trading decisions based on historical order book data. The bot calculates a confidence level and adjusts the BTC/ZAR ratio in the wallet accordingly. It includes features to record order book history, determine trading actions, and visualize various aspects of the trading process.
 
 ## Features
-- Fetches and stores the latest order book data.
-- Calculates trading confidence based on historical order book data.
-- Makes trading decisions (buy, sell, or hold) based on confidence levels.
-- Updates wallet values and visualizes them in real-time.
-- Records trading actions and updates wallet balances.
+- Fetches and analyzes real-time order book data
+- Calculates trading confidence based on historical order book data
+- Makes trading decisions (buy, sell, or hold) based on confidence levels
+- Updates wallet values and visualizes them in real-time
+- Records trading actions and updates wallet balances
+- Analyzes order book depth and visualizes cumulative order book volumes
+- Displays real-time price trends
+- Checks for arbitrage opportunities across multiple trading pairs
+- Supports both mock trading and real trading modes
 
 ## Requirements
 - Python 3.9.x
 - luno-python (Luno API client)
 - matplotlib (for visualization)
-- json (for handling order book history)
 - numpy (for numerical operations)
+- pandas (for data manipulation)
 - scipy (for statistical analysis)
-- logging (for logging trading actions and errors)
 
 ## Installation
 1. Clone the repository:
@@ -27,20 +30,19 @@ This project is a simple trading bot for the Luno cryptocurrency exchange, desig
 
 2. Install the required packages:
     ```bash
-    pip install luno-python matplotlib numpy scipy
+    pip install -r requirements.txt
     ```
 
-3. Set up your Luno API credentials by modifying the `API_KEY` and `API_SECRET` constants in the script:
-    ```python
-    API_KEY = 'your_api_key'
-    API_SECRET = 'your_api_secret'
-    ```
-    Optionally you can set the following environment variables:
-    - LUNO_API_KEY_ID
-    - LUNO_API_KEY_SECRET
-
+3. Set up your Luno API credentials:
+   - Set the following environment variables:
+     ```bash
+     export LUNO_API_KEY_ID=your_api_key
+     export LUNO_API_KEY_SECRET=your_api_secret
+     ```
 
 ## Usage
+
+### Main Trading Bot
 Run the script to start the trading bot in MOCK mode:
 ```bash
 python luno_btc_zar_trader.py
@@ -52,40 +54,30 @@ python luno_btc_zar_trader.py --true-trade
 ```
 
 The bot will:
-1. Fetch the latest ticker and order book data.
-2. Calculate the confidence level based on historical order book data.
-3. Determine the trading action (buy, sell, or hold) based on the confidence level.
-4. Update wallet balances and visualize the wallet value over time.
+1. Fetch the latest ticker and order book data
+2. Calculate the confidence level based on historical order book data
+3. Determine the trading action (buy, sell, or hold) based on the confidence level
+4. Update wallet balances and visualize the wallet value over time
+
+### Additional Scripts
+To run other analysis and visualization scripts:
+
+```bash
+python luno_confidence.py
+python luno_depth.py
+python luno_price.py
+python luno_arbitrage.py
+```
 
 ## Project Structure
-- `luno_btc_zar_trader.py`: The main script containing the trading bot logic.
-- `luno_confidence.py`: Script to calculate and visualize confidence levels based on historical order book data.
-- `luno_depth.py`: Script to analyze order book depth and visualize cumulative order book volumes.
+- `luno_btc_zar_trader.py`: The main script containing the trading bot logic
+- `luno_confidence.py`: Script to calculate and visualize confidence levels based on historical order book data
+- `luno_depth.py`: Script to analyze order book depth and visualize cumulative order book volumes
+- `luno_price.py`: Displays real-time price trends
+- `luno_arbitrage.py`: Checks for arbitrage opportunities across multiple trading pairs
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-```
-MIT License
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
 
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
@@ -94,4 +86,4 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 - [Luno API](https://www.luno.com/en/developers/api) for providing the cryptocurrency trading platform and API.
 
 ## Disclaimer
-This project is for educational purposes only. Trading cryptocurrencies carries a high level of risk, and you should carefully consider your investment objectives, level of experience, and risk appetite before engaging in such activities. Use this bot at your own risk.
+This project is for educational purposes only. Trading cryptocurrencies carries a high level of risk, and you should carefully consider your investment objectives, level of experience, and risk appetite before engaging in such activities. The authors are not responsible for any financial losses incurred through the use of this software. Use this bot at your own risk.
