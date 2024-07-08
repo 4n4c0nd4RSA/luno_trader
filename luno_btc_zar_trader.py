@@ -249,8 +249,8 @@ def mock_trade(order_type, ticker_data, fee_info):
     logging.info(f"=================================")
     logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
     if order_type == 'Buy':
-        amount = max(float(ZAR_balance/price))
         price = float(ticker_data['ask'])
+        amount = max(float(ZAR_balance/price))
         fee_percentage = float(fee_info['taker_fee'])
         ZAR_balance = 0
         BTC_balance += amount * (1-fee_percentage) 
