@@ -248,9 +248,10 @@ def mock_trade(order_type, ticker_data, fee_info):
     global ZAR_balance, BTC_balance
     logging.info(f"=================================")
     logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
+    min_trade_size = get_minimum_trade_sizes()
     if order_type == 'Buy':
         price = float(ticker_data['ask'])
-        amount = max(float(ZAR_balance/price))
+        amount = max(float(ZAR_balance/price),min_trade_size)
         fee_percentage = float(fee_info['taker_fee'])
         ZAR_balance = 0
         BTC_balance += amount * (1-fee_percentage) 
@@ -263,7 +264,7 @@ def mock_trade(order_type, ticker_data, fee_info):
         total_revenue = revenue - fee
         BTC_balance = 0
         ZAR_balance += total_revenue
-        logging.info(f'Sold {amount} BTC at {price} ZAR/BTC')
+        logging.info(f'Sold {BTC_balance} BTC at {price} ZAR/BTC')
     logging.info(f'New ZAR balance: {ZAR_balance}')
     logging.info(f'New BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
     current_btc_percentage = get_current_btc_percentage(ticker_data)
