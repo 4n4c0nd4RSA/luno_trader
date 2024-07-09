@@ -52,9 +52,6 @@ data_queue = queue.Queue()
 def on_home_clicked(event):
     print("'Home' button was clicked!")
 
-# Set up the plot
-fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15), sharex=True)
-
 # Function to get the order book
 def get_order_book():
     retries = 5
@@ -231,28 +228,35 @@ def update_balances(ticker_data, true_trade, log=False):
         logging.error(f'Error fetching updated balances: {e}')
 
 # Function to execute an actual trade
-def execute_trade(order_type, ticker_data):
+def execute_trade(order_type, ticker_data, fee_info):
     global ZAR_balance, BTC_balance
     price = float(ticker_data['bid'])
+    taker_fee_percentage = float(fee_info['taker_fee'])
+    maker_fee_percentage = float(fee_info['maker_fee'])
     min_trade_size = get_minimum_trade_sizes()
     logging.info(f"BTC Price: R {price}")
     if order_type == 'Buy':
         try:
-            amount = max(float(ZAR_balance/price), min_trade_size)
+            amount = round(float(ZAR_balance-0.01),2)
+            print(amount)
+            logging.info(f'Trying to Buy R{amount} of BTC at {price} ZAR/BTC')
             client.post_market_order(pair=PAIR, type='BUY', counter_volume=amount)
             logging.info(f'Bought {amount} BTC at {price} ZAR/BTC')
         except Exception as e:
             logging.error(f'Error executing buy order: {e}')
     elif order_type == 'Sell':
         try:
-            amount = max(float(BTC_balance), min_trade_size)
-            client.post_market_order(pair=PAIR, type='SELL', base_volume=BTC_balance)
+            amount = round(float(BTC_balance*(1-taker_fee_percentage)),6)-0.000001
+            logging.info(f'Trying to Sell {amount} BTC at {price} ZAR/BTC')
+            client.post_market_order(pair=PAIR, type='SELL', base_volume=amount)
             logging.info(f'Sold {amount} BTC at {price} ZAR/BTC')
         except Exception as e:
             logging.error(f'Error executing sell order: {e}')
     update_balances(ticker_data, True)
     current_btc_percentage = get_current_btc_percentage(ticker_data)
     logging.info(f'BTC wallet %: {current_btc_percentage}')
+    logging.info(f'New ZAR balance: {ZAR_balance}')
+    logging.info(f'New BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
 
 # Mock trade function to print what would happen in a trade
 def mock_trade(order_type, ticker_data, fee_info):
@@ -442,7 +446,7 @@ def trading_loop(true_trade):
                     continue
 
                 if true_trade:
-                    execute_trade(action, ticker_data)
+                    execute_trade(action, ticker_data, fee_info)
                 else:
                     mock_trade(action, ticker_data, fee_info)
 
@@ -454,6 +458,9 @@ def trading_loop(true_trade):
             time.sleep(API_CALL_DELAY)
 
 if __name__ == '__main__':
+    # Set up the plot
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15), sharex=True)
+
     parser = argparse.ArgumentParser(description='Luno Trading Bot')
     parser.add_argument('--true-trade', action='store_true', help='Execute real trades')
     args = parser.parse_args()
