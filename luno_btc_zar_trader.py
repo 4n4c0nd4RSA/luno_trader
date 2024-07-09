@@ -5,13 +5,15 @@ import signal
 import sys
 import threading
 import argparse
+import queue
 import luno_python.client as luno
 import matplotlib.pyplot as plt
+from matplotlib.backend_bases import NavigationToolbar2
 import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation
 from matplotlib.ticker import FuncFormatter
-from scipy.stats import linregress 
+from scipy.stats import linregress
 
 # Constants
 API_KEY = os.getenv('LUNO_API_KEY_ID')
@@ -19,6 +21,7 @@ API_SECRET = os.getenv('LUNO_API_KEY_SECRET')
 PAIR = 'XBTZAR'
 RANGE = 200
 THRESHOLD = 0.1
+API_CALL_DELAY = 60
 
 # start time
 start_time = time.gmtime()
@@ -43,6 +46,14 @@ price_values = []
 
 since = int(time.time()*1000)-23*60*60*1000
 all_trades = []
+
+data_queue = queue.Queue()
+
+def on_home_clicked(event):
+    print("'Home' button was clicked!")
+
+# Set up the plot
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15), sharex=True)
 
 # Function to get the order book
 def get_order_book():
@@ -142,7 +153,7 @@ def calculate_price_confidence():
         return mapped_value
     except Exception as e:
         logging.error(e)
-        time.sleep(60)
+        time.sleep(API_CALL_DELAY)
         return calculate_price_confidence()
 
 # Function to get the latest ticker information
@@ -272,30 +283,21 @@ def mock_trade(order_type, ticker_data, fee_info):
 
 # Function to update wallet values for plotting
 def update_wallet_values(ticker_data, confidence):
-    global ZAR_balance, BTC_balance, time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, price_values
+    global ZAR_balance, BTC_balance, data_queue
 
-    # Calculate current BTC value in ZAR
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
     total_value_zar = ZAR_balance + btc_to_zar
-
-    # Store the current time, wallet value in ZAR, confidence, and price
     current_time = time.time()
-    current_price = float(ticker_data['bid'])  # Use 'bid' price as current price
-    time_steps.append(current_time)
-    wallet_values.append(total_value_zar)
-    btc_values_in_zar.append(btc_to_zar)
-    zar_values.append(ZAR_balance)
-    confidence_values.append(confidence)
-    price_values.append(current_price)
-
-    # Ensure all lists are the same length
-    min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(price_values))
-    time_steps = time_steps[:min_length]
-    wallet_values = wallet_values[:min_length]
-    btc_values_in_zar = btc_values_in_zar[:min_length]
-    zar_values = zar_values[:min_length]
-    confidence_values = confidence_values[:min_length]
-    price_values = price_values[:min_length]
+    current_price = float(ticker_data['bid'])
+    
+    data_queue.put({
+        'time': current_time,
+        'wallet_value': total_value_zar,
+        'btc_value_in_zar': btc_to_zar,
+        'zar_value': ZAR_balance,
+        'confidence': confidence,
+        'price': current_price
+    })
 
 def format_large_number(x, pos):
     if x >= 1e6:
@@ -320,13 +322,29 @@ def plot_wallet_values():
 
 # Function to update the plot
 def update_plot(frame):
+    global time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, price_values, fig, ax1, ax2, ax3, data_queue
     try:
-        fig.clear()
-        
-        # Create three subplots
-        ax1 = fig.add_subplot(311)  # Top subplot for wallet values
-        ax2 = fig.add_subplot(312)  # Middle subplot for confidence
-        ax3 = fig.add_subplot(313)  # Bottom subplot for price
+        while not data_queue.empty():
+            data = data_queue.get_nowait()
+            time_steps.append(data['time'])
+            wallet_values.append(data['wallet_value'])
+            btc_values_in_zar.append(data['btc_value_in_zar'])
+            zar_values.append(data['zar_value'])
+            confidence_values.append(data['confidence'])
+            price_values.append(data['price'])
+
+        # Ensure all lists are the same length
+        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(price_values))
+        time_steps = time_steps[-min_length:]
+        wallet_values = wallet_values[-min_length:]
+        btc_values_in_zar = btc_values_in_zar[-min_length:]
+        zar_values = zar_values[-min_length:]
+        confidence_values = confidence_values[-min_length:]
+        price_values = price_values[-min_length:]
+
+        ax1.clear()
+        ax2.clear()
+        ax3.clear()
 
         min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values))
         
@@ -346,7 +364,9 @@ def update_plot(frame):
         # Plot confidence on the middle subplot
         current_confidence = confidence_values[-1] if confidence_values else 0
         ax2.plot(time_labels, confidence_values, label=f'Confidence ({current_confidence:.2f})', color='purple')
-        ax2.axhline(y=0.5, color='r', linestyle='--', label='Midpoint (0.5)')  # Add dashed middle line
+        ax2.axhline(y=0.5 + THRESHOLD, color='g', linestyle='--', label=f'Buy ({0.5 + THRESHOLD})')
+        ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
+        ax2.axhline(y=0.5 - THRESHOLD, color='r', linestyle='--', label=f'Sell ({0.5 - THRESHOLD})')
         ax2.set_xlabel('Time')
         ax2.set_ylabel('Confidence')
         ax2.set_title('Confidence Over Time')
@@ -362,6 +382,10 @@ def update_plot(frame):
         ax3.legend()
         ax3.tick_params(axis='x', rotation=45)
         ax3.yaxis.set_major_formatter(FuncFormatter(format_large_number))
+
+        ax1.autoscale_view(scalex=True, scaley=True)
+        ax2.autoscale_view(scalex=True, scaley=True)
+        ax3.autoscale_view(scalex=True, scaley=True)
         
         plt.tight_layout()  # Adjust the layout to prevent overlap
     except Exception as e:
@@ -375,73 +399,68 @@ def signal_handler(sig, frame):
 # Register signal handler
 signal.signal(signal.SIGINT, signal_handler)
 
-# Main function to check the ticker and place orders
 def trading_loop(true_trade):
     global ZAR_balance, BTC_balance
     old_confidence = None
-    ticker_data = get_ticker()
-    update_balances(ticker_data, true_trade)
 
     while True:
-        fee_info = get_fee_info()
-        if not fee_info:
-            logging.error('Failed to retrieve fee information')
-            continue
+        try:
+            ticker_data = get_ticker()
+            if not ticker_data:
+                logging.error('Failed to retrieve ticker data')
+                time.sleep(API_CALL_DELAY)
+                continue
 
-        ticker_data = get_ticker()
-        if not ticker_data:
-            logging.error('Failed to retrieve ticker data')
-            continue
-        update_balances(ticker_data, true_trade)
+            update_balances(ticker_data, true_trade)
 
-        order_book = get_order_book()
-        if not order_book:
-            logging.error('Failed to retrieve order book')
-            continue  # Skip the rest of the loop iteration and try again
+            order_book = get_order_book()
+            if not order_book:
+                logging.error('Failed to retrieve order book')
+                time.sleep(API_CALL_DELAY)
+                continue
 
-        conf_delta = 0
-        confidence = calculate_price_confidence()
-        if old_confidence is not None:
-            conf_delta = confidence - old_confidence 
-        old_confidence = confidence
+            confidence = calculate_price_confidence()
+            conf_delta = 0
+            if old_confidence is not None:
+                conf_delta = confidence - old_confidence 
+            old_confidence = confidence
 
-        action = determine_action(ticker_data, confidence)
+            action = determine_action(ticker_data, confidence)
 
-        # if abs(conf_delta) > 0.01 or action == 'Buy' or action == 'Sell':
-        btc_to_zar = BTC_balance * float(ticker_data['bid'])
-        total_value_zar = ZAR_balance + btc_to_zar
-        current_btc_percentage = btc_to_zar / total_value_zar
-        logging.info(f"---------------------------------")
-        logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
-        logging.info(f'BTC wallet %: {current_btc_percentage}')
-        logging.info(f'Confidence in BTC: {confidence}')
-        logging.info(f'Confidence Delta: {conf_delta}')
+            if abs(conf_delta) > 0.01 or action in ['Buy', 'Sell']:
+                logging.info(f"---------------------------------")
+                logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
+                logging.info(f'BTC wallet %: {get_current_btc_percentage(ticker_data)}')
+                logging.info(f'Confidence in BTC: {confidence}')
+                logging.info(f'Confidence Delta: {conf_delta}')
 
-        if action == 'Buy':
-            if true_trade:
-                execute_trade('Buy', ticker_data)
-            else:
-                mock_trade('Buy', ticker_data, fee_info)
-        elif action == 'Sell':
-            if true_trade:
-                execute_trade('Sell', ticker_data)
-            else:
-                mock_trade('Sell', ticker_data, fee_info)
-        update_wallet_values(ticker_data, confidence)
+            if action in ['Buy', 'Sell']:
+                fee_info = get_fee_info()
+                if not fee_info:
+                    logging.error('Failed to retrieve fee information')
+                    time.sleep(API_CALL_DELAY)
+                    continue
 
-        time.sleep(5)
+                if true_trade:
+                    execute_trade(action, ticker_data)
+                else:
+                    mock_trade(action, ticker_data, fee_info)
 
-# Argument parser
-parser = argparse.ArgumentParser(description='Luno Trading Bot')
-parser.add_argument('--true-trade', action='store_true', help='Execute real trades')
-args = parser.parse_args()
+            update_wallet_values(ticker_data, confidence)
 
-# Start the trading loop in a separate thread
-trading_thread = threading.Thread(target=trading_loop, args=(args.true_trade,))
-trading_thread.daemon = True
-trading_thread.start()
+        except Exception as e:
+            logging.error(f"Error in trading loop: {e}")
+        finally:
+            time.sleep(API_CALL_DELAY)
 
 if __name__ == '__main__':
-    fig = plt.figure(figsize=(12, 15))
-    ani = FuncAnimation(fig, update_plot, interval=5000, cache_frame_data=False)  # Update every second
-    plt.show()  # Show the plot
+    parser = argparse.ArgumentParser(description='Luno Trading Bot')
+    parser.add_argument('--true-trade', action='store_true', help='Execute real trades')
+    args = parser.parse_args()
+
+    # Start the trading loop in a separate thread
+    trading_thread = threading.Thread(target=trading_loop, args=(args.true_trade,))
+    trading_thread.daemon = True
+    trading_thread.start()
+    ani = FuncAnimation(fig, update_plot, interval=API_CALL_DELAY*1000, cache_frame_data=False)
+    plt.show()
