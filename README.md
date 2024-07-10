@@ -14,7 +14,21 @@ This project is a trading bot for the Luno cryptocurrency exchange, designed to 
 - Supports both demo trading and real trading modes
 
 ## Requirements
+You will need a Luno account with an API Key to grant the bot access to your Luno account.
 The installation methods below will handle the installation of all necessary components. For advanced users, detailed technical requirements are listed in the `requirements.txt` file.
+
+## Setting Up Your Luno Account
+
+1. Create a Luno account if you don't have one already. [Sign up here](https://www.luno.com/signup)
+2. Verify your account following Luno's instructions. [Verification guide](https://www.luno.com/help/en/articles/1000203409)
+3. Create API keys for the bot:
+   - Log in to your Luno account
+   - Go to the [API Keys section](https://www.luno.com/wallet/security/api_keys)
+   - Click "Create new key"
+   - Give it a name (e.g., "Trading Bot")
+   - Select the permissions you want to grant (read balance and trade)
+   - Click "Create key"
+   - Copy the API Key ID and Secret (you'll need these later)
 
 ## Installation
 
@@ -58,20 +72,7 @@ After obtaining the project files using either method above, you can proceed wit
     pip install -r requirements.txt
     ```
 
-## Setting Up Your Luno Account
-
-1. Create a Luno account if you don't have one already. [Sign up here](https://www.luno.com/signup)
-2. Verify your account following Luno's instructions. [Verification guide](https://www.luno.com/help/en/articles/1000203409)
-3. Create API keys for the bot:
-   - Log in to your Luno account
-   - Go to the [API Keys section](https://www.luno.com/wallet/security/api_keys)
-   - Click "Create new key"
-   - Give it a name (e.g., "Trading Bot")
-   - Select the permissions you want to grant (read balance and trade)
-   - Click "Create key"
-   - Copy the API Key ID and Secret (you'll need these later)
-
-## Setting Up Environment Variables
+## Setting Up Environment Variables - Manual Setup
 
 To securely use your API keys, you need to set them as environment variables:
 
