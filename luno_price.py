@@ -4,33 +4,21 @@ import pandas as pd
 import numpy as np
 import time
 from matplotlib.animation import FuncAnimation
-from luno_btc_zar_trader import fetch_trade_history
+from luno_btc_zar_trader import fetch_trade_history, process_data, calculate_price_slope
 
 # Initialize the Luno API client
-client = luno_python.client.Client()
-since = int(time.time()*1000)-10*60*60*1000
 all_trades = []
-
-# Process data into a DataFrame
-def process_data(candles):
-    data = []
-    for candle in candles:
-        timestamp = pd.to_datetime(candle['timestamp'], unit='ms')
-        price = float(candle['price'])
-        volume = float(candle['volume'])
-        data.append([timestamp, price, volume])
-    df = pd.DataFrame(data, columns=['Timestamp', 'Price', 'Volume'])
-    return df.set_index('Timestamp')
 
 # Update the plot
 def update_plot(frame):
     candles = None
     while candles == None:
         try:
-            candles = fetch_trade_history()
+            candles, short_candles = fetch_trade_history()
         except:
             time.sleep(5)
     df = process_data(candles)
+    df_short = process_data(short_candles)
     
     ax.clear()
     ax.plot(df.index, df['Price'], label='Price')
@@ -38,16 +26,16 @@ def update_plot(frame):
     # Calculate the average angle straight line
     start_price = df['Price'].iloc[0]
     end_price = df['Price'].iloc[-1]
+    short_start_price = df_short['Price'].iloc[0]
+    short_end_price = df_short['Price'].iloc[-1]
     ax.plot([df.index[0], df.index[-1]], [start_price, end_price], label='Trend Line', linestyle='--')
-    x_diff = (df.index[-1] - df.index[0]).total_seconds()  # Difference in seconds
-    y_diff = end_price - start_price
-
-    # Calculate the slope
-    slope = y_diff / x_diff
-    mapped_value = 1 / (1 + np.exp(-slope))
+    ax.plot([df_short.index[0], df_short.index[-1]], [short_start_price, short_end_price], label='Short Trend Line', linestyle='--')
+    mapped_value = calculate_price_slope(df)
+    short_mapped_value = 1-calculate_price_slope(df_short)
     
     # Add text annotation for the mapped value
     ax.text(0.05, 0.95, f'Price Confidence: {mapped_value:.5f}', transform=ax.transAxes, fontsize=12, verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
+    ax.text(0.05, 0.90, f'Short Price Confidence: {short_mapped_value:.5f}', transform=ax.transAxes, fontsize=12, verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
     
     ax.set_title('BTC/ZAR Price History')
     ax.set_xlabel('Date')

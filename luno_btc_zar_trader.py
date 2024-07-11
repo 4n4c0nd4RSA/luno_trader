@@ -42,6 +42,7 @@ wallet_values = []
 btc_values_in_zar = []
 zar_values = []
 confidence_values = []
+short_confidence_values = []
 price_values = []
 
 since = int(time.time()*1000)-23*60*60*1000
@@ -68,6 +69,7 @@ def get_order_book():
 def fetch_trade_history(pair='XBTZAR'):
     global since, all_trades
     age_limit = int(time.time()*1000)-10*60*60*1000
+    short_age_limit = int(time.time()*1000)-1*60*60*1000
     res = client.list_trades(pair=pair, since=since)
     all_trades.extend(res['trades'])
     while len(res['trades']) == 100:
@@ -80,7 +82,8 @@ def fetch_trade_history(pair='XBTZAR'):
     all_trades.sort(key=lambda x: x['timestamp'])
     
     recent_trades = [trade for trade in all_trades if trade['timestamp'] >= age_limit]
-    return recent_trades
+    more_recent_trades = [trade for trade in all_trades if trade['timestamp'] >= short_age_limit]
+    return recent_trades, more_recent_trades
 
 # Process data into a DataFrame
 def process_data(candles):
@@ -92,7 +95,6 @@ def process_data(candles):
         data.append([timestamp, price, volume])
     df = pd.DataFrame(data, columns=['Timestamp', 'Price', 'Volume'])
     return df.set_index('Timestamp')
-
 # Function to calculate confidence based on slope of order book data
 def calculate_slope_confidence(asks, bids, current_price):
     try:
@@ -132,22 +134,26 @@ def calculate_slope_confidence(asks, bids, current_price):
     except:
         return 0.5, 0.5
 
+# Calculate the slope
+def calculate_price_slope(df):
+    # Calculate the average angle straight line
+    start_price = df['Price'].iloc[0]
+    end_price = df['Price'].iloc[-1]
+    x_diff = (df.index[-1] - df.index[0]).total_seconds()  # Difference in seconds
+    y_diff = end_price - start_price
+
+    # Calculate the slope
+    slope = y_diff / x_diff
+    mapped_value = 1 / (1 + np.exp(-slope))
+    return 1-mapped_value
+
 # Function to calculate price confidence
 def calculate_price_confidence():
     try:
-        candles = fetch_trade_history()
+        candles, more_recent_candles = fetch_trade_history()
         df = process_data(candles)
-        
-        # Calculate the average angle straight line
-        start_price = df['Price'].iloc[0]
-        end_price = df['Price'].iloc[-1]
-        x_diff = (df.index[-1] - df.index[0]).total_seconds()  # Difference in seconds
-        y_diff = end_price - start_price
-
-        # Calculate the slope
-        slope = y_diff / x_diff
-        mapped_value = 1 / (1 + np.exp(-slope))
-        return mapped_value
+        df_short = process_data(more_recent_candles)
+        return calculate_price_slope(df), 1-calculate_price_slope(df_short)
     except Exception as e:
         logging.error(e)
         time.sleep(API_CALL_DELAY)
@@ -190,7 +196,7 @@ def get_current_btc_percentage(ticker_data):
     return current_btc_percentage
 
 # Function to determine the action (Buy, Sell, or Nothing) based on confidence
-def determine_action(ticker_data, confidence):
+def determine_action(ticker_data, confidence, short_confidence):
     global ZAR_balance, BTC_balance
     # Determine action based on the target confidence and threshold
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
@@ -286,7 +292,7 @@ def mock_trade(order_type, ticker_data, fee_info):
     logging.info(f'BTC wallet %: {current_btc_percentage}')
 
 # Function to update wallet values for plotting
-def update_wallet_values(ticker_data, confidence):
+def update_wallet_values(ticker_data, confidence, short_confidence):
     global ZAR_balance, BTC_balance, data_queue
 
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
@@ -300,6 +306,7 @@ def update_wallet_values(ticker_data, confidence):
         'btc_value_in_zar': btc_to_zar,
         'zar_value': ZAR_balance,
         'confidence': confidence,
+        'short_confidence': short_confidence,
         'price': current_price
     })
 
@@ -326,7 +333,7 @@ def plot_wallet_values():
 
 # Function to update the plot
 def update_plot(frame):
-    global time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, price_values, fig, ax1, ax2, ax3, data_queue
+    global time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, short_confidence_values, price_values, fig, ax1, ax2, ax3, data_queue
     try:
         while not data_queue.empty():
             data = data_queue.get_nowait()
@@ -335,15 +342,17 @@ def update_plot(frame):
             btc_values_in_zar.append(data['btc_value_in_zar'])
             zar_values.append(data['zar_value'])
             confidence_values.append(data['confidence'])
+            short_confidence_values.append(data['short_confidence'])
             price_values.append(data['price'])
 
         # Ensure all lists are the same length
-        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(price_values))
+        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(short_confidence_values), len(price_values))
         time_steps = time_steps[-min_length:]
         wallet_values = wallet_values[-min_length:]
         btc_values_in_zar = btc_values_in_zar[-min_length:]
         zar_values = zar_values[-min_length:]
         confidence_values = confidence_values[-min_length:]
+        short_confidence_values = short_confidence_values[-min_length:]
         price_values = price_values[-min_length:]
 
         ax1.clear()
@@ -367,7 +376,9 @@ def update_plot(frame):
         
         # Plot confidence on the middle subplot
         current_confidence = confidence_values[-1] if confidence_values else 0
+        current_short_confidence = short_confidence_values[-1] if short_confidence_values else 0
         ax2.plot(time_labels, confidence_values, label=f'Confidence ({current_confidence:.2f})', color='purple')
+        ax2.plot(time_labels, short_confidence_values, label=f'Short Confidence ({current_short_confidence:.2f})', color='pink')
         ax2.axhline(y=0.5 + THRESHOLD, color='g', linestyle='--', label=f'Buy ({0.5 + THRESHOLD})')
         ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
         ax2.axhline(y=0.5 - THRESHOLD, color='r', linestyle='--', label=f'Sell ({0.5 - THRESHOLD})')
@@ -423,13 +434,13 @@ def trading_loop(true_trade):
                 time.sleep(API_CALL_DELAY)
                 continue
 
-            confidence = calculate_price_confidence()
+            confidence, short_confidence = calculate_price_confidence()
             conf_delta = 0
             if old_confidence is not None:
                 conf_delta = confidence - old_confidence 
             old_confidence = confidence
 
-            action = determine_action(ticker_data, confidence)
+            action = determine_action(ticker_data, confidence, short_confidence)
 
             if abs(conf_delta) > 0.01 or action in ['Buy', 'Sell']:
                 logging.info(f"---------------------------------")
@@ -437,6 +448,7 @@ def trading_loop(true_trade):
                 logging.info(f'BTC wallet %: {get_current_btc_percentage(ticker_data)}')
                 logging.info(f'Confidence in BTC: {confidence}')
                 logging.info(f'Confidence Delta: {conf_delta}')
+                logging.info(f'Short Confidence: {short_confidence}')
 
             if action in ['Buy', 'Sell']:
                 fee_info = get_fee_info()
@@ -450,7 +462,7 @@ def trading_loop(true_trade):
                 else:
                     mock_trade(action, ticker_data, fee_info)
 
-            update_wallet_values(ticker_data, confidence)
+            update_wallet_values(ticker_data, confidence, short_confidence)
 
         except Exception as e:
             logging.error(f"Error in trading loop: {e}")
