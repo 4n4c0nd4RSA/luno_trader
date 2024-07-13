@@ -7,6 +7,19 @@ set PYTHON_URL=https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON
 set PYTHON_INSTALLER=python-%PYTHON_VERSION%-amd64.exe
 set GET_PIP_URL=https://bootstrap.pypa.io/get-pip.py
 set GET_PIP_SCRIPT=get-pip.py
+set VC_REDIST_INSTALLER=VC_redist.x64.exe
+
+:: Install VC++ Redistributable
+echo Installing Visual C++ Redistributable...
+if exist "%VC_REDIST_INSTALLER%" (
+    start /wait %VC_REDIST_INSTALLER% /quiet /norestart
+    if %ERRORLEVEL% neq 0 (
+        echo Failed to install Visual C++ Redistributable.
+        exit /b 1
+    )
+) else (
+    echo VC_redist.x64.exe not found in the current directory. Skipping installation.
+)
 
 :: Download Python installer
 echo Downloading Python %PYTHON_VERSION%...

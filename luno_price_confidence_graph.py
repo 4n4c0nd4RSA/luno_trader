@@ -1,14 +1,17 @@
-import luno_python.client
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 import time
 from matplotlib.animation import FuncAnimation
+from matplotlib.dates import DateFormatter
 from luno_btc_zar_trader import fetch_trade_history, process_data, calculate_price_slope
+import tzlocal
 
 # Initialize the Luno API client
 all_trades = []
 VERSION = '1.0.0'
+
+# Get the local timezone
+local_tz = tzlocal.get_localzone()
 
 # Update the plot
 def update_plot(frame):
@@ -20,6 +23,10 @@ def update_plot(frame):
             time.sleep(5)
     df = process_data(candles)
     df_short = process_data(short_candles)
+    
+    # Convert timestamps to local timezone
+    df.index = pd.to_datetime(df.index).tz_convert(local_tz)
+    df_short.index = pd.to_datetime(df_short.index).tz_convert(local_tz)
     
     ax.clear()
     ax.plot(df.index, df['Price'], label='Price')
@@ -45,6 +52,10 @@ def update_plot(frame):
 
     # Create a legend that gravitates to the left
     ax.legend(loc='center left', bbox_to_anchor=(0, 0.5))
+
+    # Format x-axis labels
+    plt.gcf().autofmt_xdate()  # Rotation
+    ax.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d %H:%M', tz=local_tz))
 
     # Adjust the layout
     plt.tight_layout()
