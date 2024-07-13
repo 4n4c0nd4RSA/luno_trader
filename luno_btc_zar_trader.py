@@ -25,6 +25,7 @@ SHORT_THRESHOLD = 0.11
 API_CALL_DELAY = 60
 PERIOD = 10
 SHORT_PERIOD = 3
+VERSION = '1.0.0'
 
 # start time
 start_time = time.gmtime()
@@ -241,8 +242,6 @@ def execute_trade(order_type, ticker_data, fee_info):
     global ZAR_balance, BTC_balance
     price = float(ticker_data['bid'])
     taker_fee_percentage = float(fee_info['taker_fee'])
-    maker_fee_percentage = float(fee_info['maker_fee'])
-    min_trade_size = get_minimum_trade_sizes()
     logging.info(f"BTC Price: R {price}")
     if order_type == 'Buy':
         try:
@@ -331,7 +330,7 @@ def plot_wallet_values():
     plt.ylabel('Wallet Value (ZAR)')
     plt.title('Wallet Value Over Time')
     plt.xticks(rotation=45)
-    plt.legend()
+    plt.legend(loc='center left', bbox_to_anchor=(0, 0.5))
     plt.show()
 
 # Function to update the plot
@@ -373,25 +372,25 @@ def update_plot(frame):
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Value (ZAR)')
         ax1.set_title('Wallet Values Over Time')
-        ax1.legend()
+        ax1.legend(loc='center left', bbox_to_anchor=(0, 0.5))
         ax1.tick_params(axis='x', rotation=45)
         ax1.yaxis.set_major_formatter(FuncFormatter(format_large_number))
         
         # Plot confidence on the middle subplot
         current_confidence = confidence_values[-1] if confidence_values else 0
         current_short_confidence = short_confidence_values[-1] if short_confidence_values else 0
-        ax2.plot(time_labels, confidence_values, label=f'Confidence ({current_confidence:.2f})', color='purple')
-        ax2.plot(time_labels, short_confidence_values, label=f'Short Confidence ({current_short_confidence:.2f})', color='pink')
-        ax2.axhline(y=0.5 + SHORT_THRESHOLD, color='lime', linestyle='--', label=f'Buy ({0.5 + SHORT_THRESHOLD})')
-        ax2.axhline(y=0.5 + THRESHOLD, color='g', linestyle='--', label=f'Buy ({0.5 + THRESHOLD})')
+        ax2.plot(time_labels, confidence_values, label=f'Market Perception ({current_confidence:.2f})', color='purple')
+        ax2.plot(time_labels, short_confidence_values, label=f'Confidence ({current_short_confidence:.2f})', color='pink')
+        ax2.axhline(y=0.5 + SHORT_THRESHOLD, color='lime', linestyle='--', label=f'MP Buy Limit ({0.5 + SHORT_THRESHOLD})')
+        ax2.axhline(y=0.5 + THRESHOLD, color='g', linestyle='--', label=f'Confidence Buy Limit ({0.5 + THRESHOLD})')
         ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
-        ax2.axhline(y=0.5 - THRESHOLD, color='r', linestyle='--', label=f'Sell ({0.5 - THRESHOLD})')
-        ax2.axhline(y=0.5 - SHORT_THRESHOLD, color='pink', linestyle='--', label=f'Sell ({0.5 - SHORT_THRESHOLD})')
+        ax2.axhline(y=0.5 - THRESHOLD, color='r', linestyle='--', label=f'MP Sell Limit ({0.5 - THRESHOLD})')
+        ax2.axhline(y=0.5 - SHORT_THRESHOLD, color='pink', linestyle='--', label=f'Confidence Sell Limit ({0.5 - SHORT_THRESHOLD})')
         ax2.set_xlabel('Time')
         ax2.set_ylabel('Confidence')
         ax2.set_title('Confidence Over Time')
         ax2.set_ylim(0, 1)  # Set y-axis limits for confidence (0 to 1)
-        ax2.legend()
+        ax2.legend(loc='center left', bbox_to_anchor=(0, 0.5))
         ax2.tick_params(axis='x', rotation=45)
         
         # Plot price on the bottom subplot
@@ -399,7 +398,7 @@ def update_plot(frame):
         ax3.set_xlabel('Time')
         ax3.set_ylabel('Price (ZAR)')
         ax3.set_title('BTC Price Over Time')
-        ax3.legend()
+        ax3.legend(loc='center left', bbox_to_anchor=(0, 0.5))
         ax3.tick_params(axis='x', rotation=45)
         ax3.yaxis.set_major_formatter(FuncFormatter(format_large_number))
 
@@ -451,9 +450,9 @@ def trading_loop(true_trade):
                 logging.info(f"---------------------------------")
                 logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
                 logging.info(f'BTC wallet %: {get_current_btc_percentage(ticker_data)}')
-                logging.info(f'Confidence in BTC: {confidence}')
-                logging.info(f'Confidence Delta: {conf_delta}')
-                logging.info(f'Short Confidence: {short_confidence}')
+                logging.info(f'Market Perception in BTC: {confidence}')
+                logging.info(f'Market Perception Delta: {conf_delta}')
+                logging.info(f'Confidence: {short_confidence}')
 
             if action in ['Buy', 'Sell']:
                 fee_info = get_fee_info()
@@ -477,6 +476,7 @@ def trading_loop(true_trade):
 if __name__ == '__main__':
     # Set up the plot
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15), sharex=True)
+    fig.canvas.manager.set_window_title(f'Luno BTC/ZAR Trading Bot - v{VERSION}')
 
     parser = argparse.ArgumentParser(description='Luno Trading Bot')
     parser.add_argument('--true-trade', action='store_true', help='Execute real trades')

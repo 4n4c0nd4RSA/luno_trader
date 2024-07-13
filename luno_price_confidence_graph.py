@@ -8,6 +8,7 @@ from luno_btc_zar_trader import fetch_trade_history, process_data, calculate_pri
 
 # Initialize the Luno API client
 all_trades = []
+VERSION = '1.0.0'
 
 # Update the plot
 def update_plot(frame):
@@ -40,11 +41,17 @@ def update_plot(frame):
     ax.set_title('BTC/ZAR Price History')
     ax.set_xlabel('Date')
     ax.set_ylabel('Price (ZAR)')
-    ax.legend()
     ax.grid()
+
+    # Create a legend that gravitates to the left
+    ax.legend(loc='center left', bbox_to_anchor=(0, 0.5))
+
+    # Adjust the layout
+    plt.tight_layout()
 
 # Set up the plot
 fig, ax = plt.subplots(figsize=(14, 7))
+fig.canvas.manager.set_window_title(f'Luno Price Confidence Graph - v{VERSION}')
 
 # Create the animation
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
