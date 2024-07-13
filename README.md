@@ -36,6 +36,8 @@ You have two options for obtaining the project files:
 
 ### Option 1: Using Git (Recommended for easy updates)
 
+Git is a version control system used by programmers to track changes in code, collaborate with others, and manage different versions of a project. It's especially useful for keeping your local copy of the project up-to-date with the latest changes.
+
 1. Install Git if you haven't already: [Git Installation Guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 2. Open a command prompt or terminal
 3. Navigate to the directory where you want to install the project
@@ -64,6 +66,8 @@ After obtaining the project files using either method above, you can proceed wit
 1. Navigate to the project folder
 2. Double-click on `windows_install.bat` to install all necessary components
 
+Note: The Easy Install method automatically sets up the environment variables for you, so you can skip the "Setting Up Environment Variables" section below.
+
 ### Manual Install (For advanced users or non-Windows systems)
 
 1. Open a command prompt or terminal in the project folder
@@ -74,7 +78,7 @@ After obtaining the project files using either method above, you can proceed wit
 
 ## Setting Up Environment Variables - Manual Setup
 
-To securely use your API keys, you need to set them as environment variables:
+This step is only necessary if you did not use the Easy Install method. To securely use your API keys, you need to set them as environment variables:
 
 ### Windows
 1. Press Win + R, type "sysdm.cpl", and press Enter
@@ -145,4 +149,3 @@ We welcome contributions! Please open an issue or submit a pull request for any 
 - [Luno Help Center](https://www.luno.com/help/en/)
 
 For any questions or issues, please open an issue on the GitHub repository or contact the project maintainers.
-
