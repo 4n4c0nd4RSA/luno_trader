@@ -6,11 +6,9 @@ import sys
 import threading
 import argparse
 import queue
-import pytz
-from datetime import datetime
+import tzlocal
 import luno_python.client as luno
 import matplotlib.pyplot as plt
-from matplotlib.backend_bases import NavigationToolbar2
 import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation
@@ -95,7 +93,7 @@ def fetch_trade_history(pair='XBTZAR'):
 def process_data(candles):
     data = []
     for candle in candles:
-        local_tz = pytz.timezone('UTC').localize(datetime.now()).tzinfo
+        local_tz = tzlocal.get_localzone()
         timestamp = pd.to_datetime(candle['timestamp'], unit='ms').tz_localize('UTC').tz_convert(local_tz)
         price = float(candle['price'])
         volume = float(candle['volume'])
@@ -326,7 +324,7 @@ def format_large_number(x, pos):
 # Function to plot wallet values over time
 def plot_wallet_values():
     # Convert Unix timestamps to pandas datetime
-    local_tz = pytz.timezone('UTC').localize(datetime.now()).tzinfo
+    local_tz = tzlocal.get_localzone()
     time_labels = pd.to_datetime(time_steps, unit='s').tz_localize('UTC').tz_convert(local_tz)
 
     plt.plot(time_labels, wallet_values, label='Wallet Value in ZAR')
@@ -367,7 +365,7 @@ def update_plot(frame):
 
         min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values))
         
-        local_tz = pytz.timezone('UTC').localize(datetime.now()).tzinfo
+        local_tz = tzlocal.get_localzone()
         time_labels = pd.to_datetime(time_steps[:min_length], unit='s').tz_localize('UTC').tz_convert(local_tz)
         
         # Plot wallet values on the top subplot
@@ -385,7 +383,7 @@ def update_plot(frame):
         current_confidence = confidence_values[-1] if confidence_values else 0
         current_short_confidence = short_confidence_values[-1] if short_confidence_values else 0
         ax2.plot(time_labels, confidence_values, label=f'Market Perception ({current_confidence:.2f})', color='purple')
-        ax2.plot(time_labels, short_confidence_values, label=f'Confidence ({current_short_confidence:.2f})', color='lavender')
+        ax2.plot(time_labels, short_confidence_values, label=f'Confidence ({current_short_confidence:.2f})', color='#c76eff')
         ax2.axhline(y=0.5 + SHORT_THRESHOLD, color='lime', linestyle='--', label=f'MP Buy Limit ({0.5 + SHORT_THRESHOLD})')
         ax2.axhline(y=0.5 + THRESHOLD, color='g', linestyle='--', label=f'Confidence Buy Limit ({0.5 + THRESHOLD})')
         ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
