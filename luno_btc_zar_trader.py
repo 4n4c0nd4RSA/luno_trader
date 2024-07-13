@@ -21,7 +21,10 @@ API_SECRET = os.getenv('LUNO_API_KEY_SECRET')
 PAIR = 'XBTZAR'
 RANGE = 200
 THRESHOLD = 0.1
+SHORT_THRESHOLD = 0.11
 API_CALL_DELAY = 60
+PERIOD = 10
+SHORT_PERIOD = 3
 
 # start time
 start_time = time.gmtime()
@@ -68,8 +71,8 @@ def get_order_book():
 # Fetch BTC/ZAR price history
 def fetch_trade_history(pair='XBTZAR'):
     global since, all_trades
-    age_limit = int(time.time()*1000)-10*60*60*1000
-    short_age_limit = int(time.time()*1000)-1*60*60*1000
+    age_limit = int(time.time()*1000)-PERIOD*60*60*1000
+    short_age_limit = int(time.time()*1000)-SHORT_PERIOD*60*60*1000
     res = client.list_trades(pair=pair, since=since)
     all_trades.extend(res['trades'])
     while len(res['trades']) == 100:
@@ -200,9 +203,9 @@ def determine_action(ticker_data, confidence, short_confidence):
     global ZAR_balance, BTC_balance
     # Determine action based on the target confidence and threshold
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
-    if confidence > (0.5 + THRESHOLD) and ZAR_balance >  (0.0001 * float(ticker_data['bid'])):
+    if confidence >= (0.5 + THRESHOLD) and short_confidence >= (0.5 + SHORT_THRESHOLD) and ZAR_balance >  (0.0001 * float(ticker_data['bid'])):
         return 'Buy'
-    elif confidence < (0.5 - THRESHOLD) and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
+    elif confidence <= (0.5 - THRESHOLD) and short_confidence <= (0.5 - SHORT_THRESHOLD) and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
         return 'Sell'
     else:
         return 'Nothing'
@@ -379,9 +382,11 @@ def update_plot(frame):
         current_short_confidence = short_confidence_values[-1] if short_confidence_values else 0
         ax2.plot(time_labels, confidence_values, label=f'Confidence ({current_confidence:.2f})', color='purple')
         ax2.plot(time_labels, short_confidence_values, label=f'Short Confidence ({current_short_confidence:.2f})', color='pink')
+        ax2.axhline(y=0.5 + SHORT_THRESHOLD, color='lime', linestyle='--', label=f'Buy ({0.5 + SHORT_THRESHOLD})')
         ax2.axhline(y=0.5 + THRESHOLD, color='g', linestyle='--', label=f'Buy ({0.5 + THRESHOLD})')
         ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
         ax2.axhline(y=0.5 - THRESHOLD, color='r', linestyle='--', label=f'Sell ({0.5 - THRESHOLD})')
+        ax2.axhline(y=0.5 - SHORT_THRESHOLD, color='pink', linestyle='--', label=f'Sell ({0.5 - SHORT_THRESHOLD})')
         ax2.set_xlabel('Time')
         ax2.set_ylabel('Confidence')
         ax2.set_title('Confidence Over Time')
