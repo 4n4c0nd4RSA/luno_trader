@@ -101,7 +101,21 @@ Replace `your_api_key` and `your_api_secret` with the values you copied earlier.
 
 ## Usage
 
-### Main Trading Bot
+### Easy Run (Windows Users)
+
+For Windows users, there's a convenient `run.bat` file that simplifies the process of running different components of the project:
+
+1. Navigate to the project folder
+2. Double-click on `run.bat`
+3. Follow the on-screen prompts to select which component you want to run
+
+This batch file will ask you what you want to run and then execute the appropriate Python script for you.
+
+### Manual Run
+
+If you prefer to run the scripts manually or if you're not using Windows, you can use the following commands:
+
+#### Main Trading Bot
 To start the trading bot in demo mode (no real trades):
 1. Open a command prompt or terminal in the project folder
 2. Run:
@@ -120,7 +134,7 @@ The bot will:
 3. Decide whether to buy, sell, or hold based on the confidence level
 4. Update wallet balances and create a graph of the wallet value over time
 
-### Other Analysis Tools
+#### Other Analysis Tools
 To run other analysis and graphing tools:
 
 ```
