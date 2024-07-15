@@ -64,7 +64,7 @@ After obtaining the project files using either method above, you can proceed wit
 ### Easy Install (Recommended for Windows Users)
 
 1. Navigate to the project folder
-2. Double-click on `windows_install.bat` to install all necessary components
+2. Double-click on `install.bat` to install all necessary components
 
 Note: The Easy Install method automatically sets up the environment variables for you, so you can skip the "Setting Up Environment Variables" section below.
 

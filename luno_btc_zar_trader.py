@@ -25,7 +25,7 @@ SHORT_THRESHOLD = 0.11
 API_CALL_DELAY = 60
 PERIOD = 10
 SHORT_PERIOD = 3
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 # start time
 start_time = time.gmtime()
@@ -85,9 +85,10 @@ def fetch_trade_history(pair='XBTZAR'):
     # Sort all_trades by timestamp
     all_trades.sort(key=lambda x: x['timestamp'])
     
-    recent_trades = [trade for trade in all_trades if trade['timestamp'] >= age_limit]
+    all_trades = [trade for trade in all_trades if trade['timestamp'] >= age_limit]
+    recent_trades = [trade for trade in all_trades if trade['timestamp'] >= age_limit and trade['timestamp'] <= short_age_limit]
     more_recent_trades = [trade for trade in all_trades if trade['timestamp'] >= short_age_limit]
-    return recent_trades, more_recent_trades
+    return recent_trades, more_recent_trades, all_trades
 
 # Process data into a DataFrame
 def process_data(candles):
