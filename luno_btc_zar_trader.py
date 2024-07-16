@@ -156,7 +156,7 @@ def calculate_price_slope(df):
 # Function to calculate price confidence
 def calculate_price_confidence():
     try:
-        candles, more_recent_candles = fetch_trade_history()
+        candles, more_recent_candles, all = fetch_trade_history()
         df = process_data(candles)
         df_short = process_data(more_recent_candles)
         return calculate_price_slope(df), 1-calculate_price_slope(df_short)

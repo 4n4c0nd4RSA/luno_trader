@@ -11,6 +11,13 @@ VERSION = '1.0.1'
 # Get the local timezone
 local_tz = tzlocal.get_localzone()
 
+# Global variables
+price_line = None
+trend_line = None
+short_trend_line = None
+price_confidence_text = None
+short_price_confidence_text = None
+
 def update_plot(frame):
     global price_line, trend_line, short_trend_line, price_confidence_text, short_price_confidence_text
 
@@ -38,6 +45,7 @@ def update_plot(frame):
     df_short.index = pd.to_datetime(df_short.index).tz_convert(local_tz)
     
     # Update or create the price line
+
     if price_line is None:
         price_line, = ax.plot(df_all.index, df_all['Price'], label='Price')
     else:
@@ -48,7 +56,7 @@ def update_plot(frame):
     short_start_price, short_end_price = df_short['Price'].iloc[0], df_short['Price'].iloc[-1]
 
     if trend_line is None:
-        trend_line, = ax.plot([df.index[0], df.index[-1]], [start_price, end_price], label='market Perception', linestyle='--')
+        trend_line, = ax.plot([df.index[0], df.index[-1]], [start_price, end_price], label='Market Perception', linestyle='--')
     else:
         trend_line.set_data([df.index[0], df.index[-1]], [start_price, end_price])
 
@@ -93,7 +101,7 @@ fig.canvas.manager.set_window_title(f'Luno Price Confidence Graph - v{VERSION}')
 
 # Create the animation
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
-ani = FuncAnimation(fig, update_plot, interval=UPDATE_INTERVAL)
+ani = FuncAnimation(fig, update_plot, interval=UPDATE_INTERVAL, cache_frame_data=False)
 
 # Show the plot
 plt.show()
