@@ -2,6 +2,10 @@
 
 This project is a trading bot for the Luno cryptocurrency exchange, designed to monitor the CRYPTO/ZAR trading pair and make trading decisions based on historical order book data. The bot calculates a confidence level and adjusts the CRYPTO/ZAR ratio in the wallet accordingly. It includes features to record order book history, determine trading actions, and create graphs of various aspects of the trading process.
 
+## Latest Updates
+
+Version 1.0.1 has been released! This update includes improvements to the Market Perception formula and configuration process. For full details on the changes and new features, please see the [1.0.1 Patch Notes](https://github.com/4n4c0nd4RSA/luno_trader/blob/features/update_notes/1.0.1/1.0.1.md).
+
 ## Features
 - Fetches and analyzes real-time order book data
 - Calculates trading confidence based on historical order book data
@@ -98,6 +102,23 @@ export LUNO_API_KEY_SECRET=your_api_secret
 ```
 
 Replace `your_api_key` and `your_api_secret` with the values you copied earlier.
+
+## Configuration
+
+The project includes a `config.bat` file for easy configuration of the bot:
+
+1. Navigate to the project folder
+2. Double-click on `config.bat`
+3. Follow the prompts to set values for:
+   - Trading pair (e.g., XBTZAR)
+   - Market Perception Threshold
+   - Confidence threshold
+   - API call delay
+   - Period value
+   - Short period value
+   - Depth chart range
+
+The script will generate a `config.py` file with your chosen settings. If you don't change a value, it will use the default.
 
 ## Usage
 
