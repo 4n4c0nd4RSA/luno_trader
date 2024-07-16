@@ -248,7 +248,6 @@ def execute_trade(order_type, ticker_data, fee_info):
     if order_type == 'Buy':
         try:
             amount = round(float(ZAR_balance-0.01),2)
-            print(amount)
             logging.info(f'Trying to Buy R{amount} of {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
             client.post_market_order(pair=PAIR, type='BUY', counter_volume=amount)
             logging.info(f'Bought {amount} {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
@@ -256,7 +255,7 @@ def execute_trade(order_type, ticker_data, fee_info):
             logging.error(f'Error executing buy order: {e}')
     elif order_type == 'Sell':
         try:
-            amount = round(float(BTC_balance*(1-taker_fee_percentage)),6)-0.000001
+            amount = round(float(BTC_balance*(1-taker_fee_percentage))-0.000001,6)
             logging.info(f'Trying to Sell {amount} {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
             client.post_market_order(pair=PAIR, type='SELL', base_volume=amount)
             logging.info(f'Sold {amount} {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
