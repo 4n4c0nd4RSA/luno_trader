@@ -5,13 +5,13 @@ import time
 import logging
 from matplotlib.animation import FuncAnimation
 from scipy.stats import linregress
-from luno_btc_zar_trader import RANGE
+from config import PAIR, RANGE
+from luno_zar_trader import extract_base_currency
 
 # Constants
-PAIR = 'XBTZAR'
 PRICE_DELTA = 1000 * RANGE
 UPDATE_INTERVAL = 5000  # Update every 5000 milliseconds (5 seconds)
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 # Initialize logging
 logging.basicConfig(filename='depth_script.log', level=logging.INFO, format='%(asctime)s %(message)s')
@@ -110,7 +110,7 @@ def update_plot(frame):
 
 
     plt.xlabel('Price (ZAR)')
-    plt.ylabel('Cumulative Volume (BTC)')
+    plt.ylabel(f'Cumulative Volume ({extract_base_currency(PAIR)})')
     plt.title('Order Book Depth')
     plt.legend()
     plt.grid(True)
@@ -120,7 +120,7 @@ fig, ax = plt.subplots()
 fig.canvas.manager.set_window_title(f'Luno Depth Confidence Graph - v{VERSION}')
 
 # Create the animation
-ani = FuncAnimation(fig, update_plot, interval=UPDATE_INTERVAL)
+ani = FuncAnimation(fig, update_plot, interval=UPDATE_INTERVAL, cache_frame_data=False)
 
 # Show the plot
 plt.show()

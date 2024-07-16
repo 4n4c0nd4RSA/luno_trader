@@ -1,6 +1,10 @@
-# Luno BTC/ZAR Trader
+# Luno ZAR Trader
 
-This project is a trading bot for the Luno cryptocurrency exchange, designed to monitor the BTC/ZAR trading pair and make trading decisions based on historical order book data. The bot calculates a confidence level and adjusts the BTC/ZAR ratio in the wallet accordingly. It includes features to record order book history, determine trading actions, and create graphs of various aspects of the trading process.
+This project is a trading bot for the Luno cryptocurrency exchange, designed to monitor the CRYPTO/ZAR trading pair and make trading decisions based on historical order book data. The bot calculates a confidence level and adjusts the CRYPTO/ZAR ratio in the wallet accordingly. It includes features to record order book history, determine trading actions, and create graphs of various aspects of the trading process.
+
+## Latest Updates
+
+Version 1.0.1 has been released! This update includes improvements to the Market Perception formula and configuration process. For full details on the changes and new features, please see the [1.0.1 Patch Notes](https://github.com/4n4c0nd4RSA/luno_trader/blob/features/update_notes/1.0.1/1.0.1.md).
 
 ## Features
 - Fetches and analyzes real-time order book data
@@ -64,7 +68,7 @@ After obtaining the project files using either method above, you can proceed wit
 ### Easy Install (Recommended for Windows Users)
 
 1. Navigate to the project folder
-2. Double-click on `windows_install.bat` to install all necessary components
+2. Double-click on `install.bat` to install all necessary components
 
 Note: The Easy Install method automatically sets up the environment variables for you, so you can skip the "Setting Up Environment Variables" section below.
 
@@ -99,19 +103,50 @@ export LUNO_API_KEY_SECRET=your_api_secret
 
 Replace `your_api_key` and `your_api_secret` with the values you copied earlier.
 
+## Configuration
+
+The project includes a `config.bat` file for easy configuration of the bot:
+
+1. Navigate to the project folder
+2. Double-click on `config.bat`
+3. Follow the prompts to set values for:
+   - Trading pair (e.g., XBTZAR)
+   - Market Perception Threshold
+   - Confidence threshold
+   - API call delay
+   - Period value
+   - Short period value
+   - Depth chart range
+
+The script will generate a `config.py` file with your chosen settings. If you don't change a value, it will use the default.
+
 ## Usage
 
-### Main Trading Bot
+### Easy Run (Windows Users)
+
+For Windows users, there's a convenient `run.bat` file that simplifies the process of running different components of the project:
+
+1. Navigate to the project folder
+2. Double-click on `run.bat`
+3. Follow the on-screen prompts to select which component you want to run
+
+This batch file will ask you what you want to run and then execute the appropriate Python script for you.
+
+### Manual Run
+
+If you prefer to run the scripts manually or if you're not using Windows, you can use the following commands:
+
+#### Main Trading Bot
 To start the trading bot in demo mode (no real trades):
 1. Open a command prompt or terminal in the project folder
 2. Run:
     ```
-    python luno_btc_zar_trader.py
+    python luno_zar_trader.py
     ```
 
 To start the bot with real trading (uses actual funds):
 ```
-python luno_btc_zar_trader.py --true-trade
+python luno_zar_trader.py --true-trade
 ```
 
 The bot will:
@@ -120,7 +155,7 @@ The bot will:
 3. Decide whether to buy, sell, or hold based on the confidence level
 4. Update wallet balances and create a graph of the wallet value over time
 
-### Other Analysis Tools
+#### Other Analysis Tools
 To run other analysis and graphing tools:
 
 ```
@@ -147,5 +182,3 @@ We welcome contributions! Please open an issue or submit a pull request for any 
 ## More Information
 - [Luno API Documentation](https://www.luno.com/en/developers/api)
 - [Luno Help Center](https://www.luno.com/help/en/)
-
-For any questions or issues, please open an issue on the GitHub repository or contact the project maintainers.
