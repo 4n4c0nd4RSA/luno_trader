@@ -31,9 +31,9 @@ for %%i in (%choice%) do (
         set "filename=!file[%%i]!"
         set "params="
 
-        :: Check if the file is luno_btc_zar_trader.py and ask for True Trade
-        if "!filename!"=="luno_btc_zar_trader.py" (
-            set /p "true_trade=Do you want to activate True Trade for luno_btc_zar_trader.py? (y/n): "
+        :: Check if the file is luno_zar_trader.py and ask for True Trade
+        if "!filename!"=="luno_zar_trader.py" (
+            set /p "true_trade=Do you want to activate True Trade for luno_zar_trader.py? (y/n): "
             if /i "!true_trade!"=="y" (
                 set "params=--true-trade"
             )

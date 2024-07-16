@@ -1,6 +1,6 @@
-# Luno BTC/ZAR Trader
+# Luno ZAR Trader
 
-This project is a trading bot for the Luno cryptocurrency exchange, designed to monitor the BTC/ZAR trading pair and make trading decisions based on historical order book data. The bot calculates a confidence level and adjusts the BTC/ZAR ratio in the wallet accordingly. It includes features to record order book history, determine trading actions, and create graphs of various aspects of the trading process.
+This project is a trading bot for the Luno cryptocurrency exchange, designed to monitor the CRYPTO/ZAR trading pair and make trading decisions based on historical order book data. The bot calculates a confidence level and adjusts the CRYPTO/ZAR ratio in the wallet accordingly. It includes features to record order book history, determine trading actions, and create graphs of various aspects of the trading process.
 
 ## Features
 - Fetches and analyzes real-time order book data
@@ -120,12 +120,12 @@ To start the trading bot in demo mode (no real trades):
 1. Open a command prompt or terminal in the project folder
 2. Run:
     ```
-    python luno_btc_zar_trader.py
+    python luno_zar_trader.py
     ```
 
 To start the bot with real trading (uses actual funds):
 ```
-python luno_btc_zar_trader.py --true-trade
+python luno_zar_trader.py --true-trade
 ```
 
 The bot will:
@@ -161,5 +161,3 @@ We welcome contributions! Please open an issue or submit a pull request for any 
 ## More Information
 - [Luno API Documentation](https://www.luno.com/en/developers/api)
 - [Luno Help Center](https://www.luno.com/help/en/)
-
-For any questions or issues, please open an issue on the GitHub repository or contact the project maintainers.

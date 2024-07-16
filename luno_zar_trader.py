@@ -14,17 +14,11 @@ import pandas as pd
 from matplotlib.animation import FuncAnimation
 from matplotlib.ticker import FuncFormatter
 from scipy.stats import linregress
+from config import API_CALL_DELAY,PAIR,PERIOD,SHORT_PERIOD,SHORT_THRESHOLD,THRESHOLD
 
 # Constants
 API_KEY = os.getenv('LUNO_API_KEY_ID')
 API_SECRET = os.getenv('LUNO_API_KEY_SECRET')
-PAIR = 'XBTZAR'
-RANGE = 200
-THRESHOLD = 0.1
-SHORT_THRESHOLD = 0.11
-API_CALL_DELAY = 60
-PERIOD = 10
-SHORT_PERIOD = 3
 VERSION = '1.0.1'
 
 # start time
@@ -38,7 +32,7 @@ client = luno.Client(api_key_id=API_KEY, api_key_secret=API_SECRET)
 
 # Initialize wallet balances
 ZAR_balance = 2000  # Initial ZAR balance
-BTC_balance = 0  # Initial BTC balance
+BTC_balance = 0  # Initial PAIR balance
 
 # Lists to store wallet values over time
 time_steps = []
@@ -53,6 +47,12 @@ since = int(time.time()*1000)-23*60*60*1000
 all_trades = []
 
 data_queue = queue.Queue()
+
+def extract_base_currency(pair=PAIR):
+    if pair.endswith('ZAR'):
+        return pair[:-3]
+    else:
+        return None
 
 def on_home_clicked(event):
     print("'Home' button was clicked!")
@@ -69,8 +69,8 @@ def get_order_book():
             time.sleep(2 ** i)  # Exponential backoff
     return None
 
-# Fetch BTC/ZAR price history
-def fetch_trade_history(pair='XBTZAR'):
+# Fetch PAIR/ZAR price history
+def fetch_trade_history(pair=PAIR):
     global since, all_trades
     age_limit = int(time.time()*1000)-PERIOD*60*60*1000
     short_age_limit = int(time.time()*1000)-SHORT_PERIOD*60*60*1000
@@ -156,7 +156,7 @@ def calculate_price_slope(df):
 # Function to calculate price confidence
 def calculate_price_confidence():
     try:
-        candles, more_recent_candles, all = fetch_trade_history()
+        candles, more_recent_candles, all = fetch_trade_history(PAIR)
         df = process_data(candles)
         df_short = process_data(more_recent_candles)
         return calculate_price_slope(df), 1-calculate_price_slope(df_short)
@@ -191,11 +191,11 @@ def get_fee_info():
 
 def get_current_btc_percentage(ticker_data):
     global ZAR_balance, BTC_balance
-    # Calculate current BTC value in ZAR
+    # Calculate current PAIR value in ZAR
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
     total_value_zar = ZAR_balance + btc_to_zar
 
-    # Calculate current BTC percentage of total value
+    # Calculate current PAIR percentage of total value
     current_btc_percentage = 0
     if (total_value_zar != 0):
         current_btc_percentage = btc_to_zar / total_value_zar
@@ -222,20 +222,20 @@ def update_balances(ticker_data, true_trade, log=False):
     global ZAR_balance, BTC_balance
     try:
         if true_trade:
-            balance_response = client.get_balances(assets=['ZAR', 'XBT'])
+            balance_response = client.get_balances(assets=['ZAR', extract_base_currency(PAIR)])
             while balance_response == None or balance_response['balance'] == None:
                 time.sleep(1)
-                balance_response = client.get_balances(assets=['ZAR', 'XBT'])
+                balance_response = client.get_balances(assets=['ZAR', extract_base_currency(PAIR)])
             ZAR_balance = 0
             BTC_balance = 0
             for balance in balance_response['balance']:
                 if balance['asset'] == 'ZAR':
                     ZAR_balance += float(balance['balance'])
-                elif balance['asset'] == 'XBT':
+                elif balance['asset'] == extract_base_currency(PAIR):
                     BTC_balance += float(balance['balance'])
         if log:
             logging.info(f'Updated ZAR balance: {ZAR_balance}')
-            logging.info(f'Updated BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+            logging.info(f'Updated {extract_base_currency(PAIR)} balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
     except Exception as e:
         logging.error(f'Error fetching updated balances: {e}')
 
@@ -244,35 +244,35 @@ def execute_trade(order_type, ticker_data, fee_info):
     global ZAR_balance, BTC_balance
     price = float(ticker_data['bid'])
     taker_fee_percentage = float(fee_info['taker_fee'])
-    logging.info(f"BTC Price: R {price}")
+    logging.info(f"{extract_base_currency(PAIR)} Price: R {price}")
     if order_type == 'Buy':
         try:
             amount = round(float(ZAR_balance-0.01),2)
             print(amount)
-            logging.info(f'Trying to Buy R{amount} of BTC at {price} ZAR/BTC')
+            logging.info(f'Trying to Buy R{amount} of {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
             client.post_market_order(pair=PAIR, type='BUY', counter_volume=amount)
-            logging.info(f'Bought {amount} BTC at {price} ZAR/BTC')
+            logging.info(f'Bought {amount} {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
         except Exception as e:
             logging.error(f'Error executing buy order: {e}')
     elif order_type == 'Sell':
         try:
             amount = round(float(BTC_balance*(1-taker_fee_percentage)),6)-0.000001
-            logging.info(f'Trying to Sell {amount} BTC at {price} ZAR/BTC')
+            logging.info(f'Trying to Sell {amount} {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
             client.post_market_order(pair=PAIR, type='SELL', base_volume=amount)
-            logging.info(f'Sold {amount} BTC at {price} ZAR/BTC')
+            logging.info(f'Sold {amount} {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
         except Exception as e:
             logging.error(f'Error executing sell order: {e}')
     update_balances(ticker_data, True)
     current_btc_percentage = get_current_btc_percentage(ticker_data)
-    logging.info(f'BTC wallet %: {current_btc_percentage}')
+    logging.info(f'{extract_base_currency(PAIR)} wallet %: {current_btc_percentage}')
     logging.info(f'New ZAR balance: {ZAR_balance}')
-    logging.info(f'New BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+    logging.info(f'New {extract_base_currency(PAIR)} balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
 
 # Mock trade function to print what would happen in a trade
 def mock_trade(order_type, ticker_data, fee_info):
     global ZAR_balance, BTC_balance
     logging.info(f"=================================")
-    logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
+    logging.info(f"{extract_base_currency(PAIR)} Price: R {float(ticker_data['bid'])}")
     min_trade_size = get_minimum_trade_sizes()
     if order_type == 'Buy':
         price = float(ticker_data['ask'])
@@ -280,7 +280,7 @@ def mock_trade(order_type, ticker_data, fee_info):
         fee_percentage = float(fee_info['taker_fee'])
         ZAR_balance = 0
         BTC_balance += amount * (1-fee_percentage) 
-        logging.info(f'Bought {amount} BTC at {price} ZAR/BTC')
+        logging.info(f'Bought {amount} {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
     elif order_type == 'Sell':
         price = float(ticker_data['bid'])
         fee_percentage = float(fee_info['taker_fee'])
@@ -289,11 +289,11 @@ def mock_trade(order_type, ticker_data, fee_info):
         total_revenue = revenue - fee
         BTC_balance = 0
         ZAR_balance += total_revenue
-        logging.info(f'Sold {BTC_balance} BTC at {price} ZAR/BTC')
+        logging.info(f'Sold {BTC_balance} {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
     logging.info(f'New ZAR balance: {ZAR_balance}')
-    logging.info(f'New BTC balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+    logging.info(f'New {extract_base_currency(PAIR)} balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
     current_btc_percentage = get_current_btc_percentage(ticker_data)
-    logging.info(f'BTC wallet %: {current_btc_percentage}')
+    logging.info(f'{extract_base_currency(PAIR)} wallet %: {current_btc_percentage}')
 
 # Function to update wallet values for plotting
 def update_wallet_values(ticker_data, confidence, short_confidence):
@@ -371,7 +371,7 @@ def update_plot(frame):
         
         # Plot wallet values on the top subplot
         ax1.plot(time_labels, wallet_values[:min_length], label='Total Wallet Value in ZAR')
-        ax1.plot(time_labels, btc_values_in_zar[:min_length], label='BTC Value in ZAR')
+        ax1.plot(time_labels, btc_values_in_zar[:min_length], label=f'{extract_base_currency(PAIR)} Value in ZAR')
         ax1.plot(time_labels, zar_values[:min_length], label='ZAR Value')
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Value (ZAR)')
@@ -398,10 +398,10 @@ def update_plot(frame):
         ax2.tick_params(axis='x', rotation=45)
         
         # Plot price on the bottom subplot
-        ax3.plot(time_labels, price_values, label='BTC Price', color='green')
+        ax3.plot(time_labels, price_values, label=f'{extract_base_currency(PAIR)} Price', color='green')
         ax3.set_xlabel('Time')
         ax3.set_ylabel('Price (ZAR)')
-        ax3.set_title('BTC Price Over Time')
+        ax3.set_title(f'{extract_base_currency(PAIR)} Price Over Time')
         ax3.legend(loc='center left', bbox_to_anchor=(0, 0.5))
         ax3.tick_params(axis='x', rotation=45)
         ax3.yaxis.set_major_formatter(FuncFormatter(format_large_number))
@@ -452,9 +452,9 @@ def trading_loop(true_trade):
 
             if abs(conf_delta) > 0.01 or action in ['Buy', 'Sell']:
                 logging.info(f"---------------------------------")
-                logging.info(f"BTC Price: R {float(ticker_data['bid'])}")
-                logging.info(f'BTC wallet %: {get_current_btc_percentage(ticker_data)}')
-                logging.info(f'Market Perception in BTC: {confidence}')
+                logging.info(f"{extract_base_currency(PAIR)} Price: R {float(ticker_data['bid'])}")
+                logging.info(f'{extract_base_currency(PAIR)} wallet %: {get_current_btc_percentage(ticker_data)}')
+                logging.info(f'Market Perception in {extract_base_currency(PAIR)}: {confidence}')
                 logging.info(f'Market Perception Delta: {conf_delta}')
                 logging.info(f'Confidence: {short_confidence}')
 
@@ -480,7 +480,7 @@ def trading_loop(true_trade):
 if __name__ == '__main__':
     # Set up the plot
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15), sharex=True)
-    fig.canvas.manager.set_window_title(f'Luno BTC/ZAR Trading Bot - v{VERSION}')
+    fig.canvas.manager.set_window_title(f'Luno {extract_base_currency(PAIR)}/ZAR Trading Bot - v{VERSION}')
 
     parser = argparse.ArgumentParser(description='Luno Trading Bot')
     parser.add_argument('--true-trade', action='store_true', help='Execute real trades')

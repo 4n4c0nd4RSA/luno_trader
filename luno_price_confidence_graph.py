@@ -3,7 +3,8 @@ import pandas as pd
 import time
 from matplotlib.animation import FuncAnimation
 from matplotlib.dates import DateFormatter
-from luno_btc_zar_trader import fetch_trade_history, process_data, calculate_price_slope
+from config import PAIR
+from luno_zar_trader import fetch_trade_history, process_data, calculate_price_slope, extract_base_currency
 import tzlocal
 
 VERSION = '1.0.1'
@@ -26,7 +27,7 @@ def update_plot(frame):
 
     for _ in range(max_retries):
         try:
-            candles, short_candles, all_candles = fetch_trade_history()
+            candles, short_candles, all_candles = fetch_trade_history(PAIR)
             break
         except Exception as e:
             print(f"Error fetching trade history: {e}. Retrying in {retry_delay} seconds...")
@@ -80,7 +81,7 @@ def update_plot(frame):
     # Update axis limits and labels
     ax.relim()
     ax.autoscale_view()
-    ax.set_title('BTC/ZAR Price History')
+    ax.set_title(f'{extract_base_currency(PAIR)}/ZAR Price History')
     ax.set_xlabel('Date')
     ax.set_ylabel('Price (ZAR)')
     ax.grid(True)
