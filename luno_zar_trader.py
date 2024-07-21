@@ -14,12 +14,12 @@ import pandas as pd
 from matplotlib.animation import FuncAnimation
 from matplotlib.ticker import FuncFormatter
 from scipy.stats import linregress
-from config import API_CALL_DELAY,PAIR,PERIOD,SHORT_PERIOD,SHORT_THRESHOLD,THRESHOLD
+from config import API_CALL_DELAY,PAIR,PERIOD,SHORT_PERIOD,PRICE_CONFIDENCE_THRESHOLD,MARKET_PERCEPTION_THRESHOLD, MARKET_MOMENTUM_INDICATOR_THRESHOLD
 
 # Constants
 API_KEY = os.getenv('LUNO_API_KEY_ID')
 API_SECRET = os.getenv('LUNO_API_KEY_SECRET')
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 # start time
 start_time = time.gmtime()
@@ -41,6 +41,7 @@ btc_values_in_zar = []
 zar_values = []
 confidence_values = []
 short_confidence_values = []
+market_momentum_indicator_values = []
 price_values = []
 
 since = int(time.time()*1000)-23*60*60*1000
@@ -205,10 +206,17 @@ def get_current_btc_percentage(ticker_data):
 def determine_action(ticker_data, confidence, short_confidence):
     global ZAR_balance, BTC_balance
     # Determine action based on the target confidence and threshold
+    mmi = (confidence + short_confidence) / 2
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
-    if confidence >= (0.5 + THRESHOLD) and short_confidence >= (0.5 + SHORT_THRESHOLD) and ZAR_balance >  (0.0001 * float(ticker_data['bid'])):
+    if (confidence >= (0.5 + MARKET_PERCEPTION_THRESHOLD) 
+        and short_confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD)
+        or short_confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD) 
+        and mmi >= (0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD)) and ZAR_balance >  (0.0001 * float(ticker_data['bid'])):
         return 'Buy'
-    elif confidence <= (0.5 - THRESHOLD) and short_confidence <= (0.5 - SHORT_THRESHOLD) and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
+    elif (confidence <= (0.5 - MARKET_PERCEPTION_THRESHOLD) 
+          and short_confidence <= (0.5 - PRICE_CONFIDENCE_THRESHOLD) 
+          or short_confidence <= (0.5 - PRICE_CONFIDENCE_THRESHOLD) 
+          and mmi <= (0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD)) and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
         return 'Sell'
     else:
         return 'Nothing'
@@ -289,8 +297,8 @@ def mock_trade(order_type, ticker_data, fee_info):
         BTC_balance = 0
         ZAR_balance += total_revenue
         logging.info(f'Sold {BTC_balance} {extract_base_currency(PAIR)} at {price} ZAR/{extract_base_currency(PAIR)}')
-    logging.info(f'New ZAR balance: {ZAR_balance}')
-    logging.info(f'New {extract_base_currency(PAIR)} balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
+    logging.info(f'New Demo ZAR balance: {ZAR_balance}')
+    logging.info(f'New Demo {extract_base_currency(PAIR)} balance: {BTC_balance} ({BTC_balance * float(ticker_data["bid"])})')
     current_btc_percentage = get_current_btc_percentage(ticker_data)
     logging.info(f'{extract_base_currency(PAIR)} wallet %: {current_btc_percentage}')
 
@@ -337,7 +345,7 @@ def plot_wallet_values():
 
 # Function to update the plot
 def update_plot(frame):
-    global time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, short_confidence_values, price_values, fig, ax1, ax2, ax3, data_queue
+    global time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, short_confidence_values, market_momentum_indicator_values, price_values, fig, ax1, ax2, ax3, data_queue
     try:
         while not data_queue.empty():
             data = data_queue.get_nowait()
@@ -347,16 +355,18 @@ def update_plot(frame):
             zar_values.append(data['zar_value'])
             confidence_values.append(data['confidence'])
             short_confidence_values.append(data['short_confidence'])
+            market_momentum_indicator_values.append((data['confidence'] + data['short_confidence'])/2)
             price_values.append(data['price'])
 
         # Ensure all lists are the same length
-        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(short_confidence_values), len(price_values))
+        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(short_confidence_values), len(price_values), len(market_momentum_indicator_values))
         time_steps = time_steps[-min_length:]
         wallet_values = wallet_values[-min_length:]
         btc_values_in_zar = btc_values_in_zar[-min_length:]
         zar_values = zar_values[-min_length:]
         confidence_values = confidence_values[-min_length:]
         short_confidence_values = short_confidence_values[-min_length:]
+        market_momentum_indicator_values = market_momentum_indicator_values[-min_length:]
         price_values = price_values[-min_length:]
 
         ax1.clear()
@@ -382,16 +392,20 @@ def update_plot(frame):
         # Plot confidence on the middle subplot
         current_confidence = confidence_values[-1] if confidence_values else 0
         current_short_confidence = short_confidence_values[-1] if short_confidence_values else 0
+        current_mmi = market_momentum_indicator_values[-1] if market_momentum_indicator_values else 0
+        ax2.plot(time_labels, short_confidence_values, label=f'Price Confidence ({current_short_confidence:.2f})', color='#c76eff')
+        ax2.plot(time_labels, market_momentum_indicator_values, label=f'Market Momentum Indicator ({current_mmi:.2f})', color='#f51bbe')
         ax2.plot(time_labels, confidence_values, label=f'Market Perception ({current_confidence:.2f})', color='purple')
-        ax2.plot(time_labels, short_confidence_values, label=f'Confidence ({current_short_confidence:.2f})', color='#c76eff')
-        ax2.axhline(y=0.5 + SHORT_THRESHOLD, color='lime', linestyle='--', label=f'MP Buy Limit ({0.5 + SHORT_THRESHOLD})')
-        ax2.axhline(y=0.5 + THRESHOLD, color='g', linestyle='--', label=f'Confidence Buy Limit ({0.5 + THRESHOLD})')
+        ax2.axhline(y=0.5 + PRICE_CONFIDENCE_THRESHOLD, color='g', linestyle='--', label=f'PC Buy Limit ({0.5 + PRICE_CONFIDENCE_THRESHOLD})')
+        ax2.axhline(y=0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#0db542', linestyle='--', label=f'MMI Buy Limit ({0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
+        ax2.axhline(y=0.5 + MARKET_PERCEPTION_THRESHOLD, color='lime', linestyle='--', label=f'MP Buy Limit ({0.5 + MARKET_PERCEPTION_THRESHOLD})')
         ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
-        ax2.axhline(y=0.5 - THRESHOLD, color='r', linestyle='--', label=f'Confidence Sell Limit ({0.5 - THRESHOLD})')
-        ax2.axhline(y=0.5 - SHORT_THRESHOLD, color='pink', linestyle='--', label=f'MP Sell Limit ({0.5 - SHORT_THRESHOLD})')
+        ax2.axhline(y=0.5 - MARKET_PERCEPTION_THRESHOLD, color='pink', linestyle='--', label=f'MP Sell Limit ({0.5 - MARKET_PERCEPTION_THRESHOLD})')
+        ax2.axhline(y=0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#f5b8cf', linestyle='--', label=f'MMI Sell Limit ({0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
+        ax2.axhline(y=0.5 - PRICE_CONFIDENCE_THRESHOLD, color='r', linestyle='--', label=f'PC Sell Limit ({0.5 - PRICE_CONFIDENCE_THRESHOLD})')
         ax2.set_xlabel('Time')
-        ax2.set_ylabel('Confidence')
-        ax2.set_title('Confidence Over Time')
+        ax2.set_ylabel('Price Confidence')
+        ax2.set_title('Market Indicators')
         ax2.set_ylim(0, 1)  # Set y-axis limits for confidence (0 to 1)
         ax2.legend(loc='center left', bbox_to_anchor=(0, 0.5))
         ax2.tick_params(axis='x', rotation=45)
@@ -455,8 +469,7 @@ def trading_loop(true_trade):
                 logging.info(f'{extract_base_currency(PAIR)} wallet %: {get_current_btc_percentage(ticker_data)}')
                 logging.info(f'Market Perception in {extract_base_currency(PAIR)}: {confidence}')
                 logging.info(f'Market Perception Delta: {conf_delta}')
-                logging.info(f'Confidence: {short_confidence}')
-
+                logging.info(f'Price Confidence: {short_confidence}')
             if action in ['Buy', 'Sell']:
                 fee_info = get_fee_info()
                 if not fee_info:
@@ -479,11 +492,15 @@ def trading_loop(true_trade):
 if __name__ == '__main__':
     # Set up the plot
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15), sharex=True)
-    fig.canvas.manager.set_window_title(f'Luno {extract_base_currency(PAIR)}/ZAR Trading Bot - v{VERSION}')
 
     parser = argparse.ArgumentParser(description='Luno Trading Bot')
     parser.add_argument('--true-trade', action='store_true', help='Execute real trades')
     args = parser.parse_args()
+
+    window_title = f'Luno {extract_base_currency(PAIR)}/ZAR Trading Bot - v{VERSION}'
+    if args.true_trade != True:
+        window_title += ' (Demo Mode)'
+    fig.canvas.manager.set_window_title(window_title)
 
     # Start the trading loop in a separate thread
     trading_thread = threading.Thread(target=trading_loop, args=(args.true_trade,))
