@@ -4,9 +4,9 @@ This project is a trading bot for the Luno cryptocurrency exchange, designed to 
 
 ## Patch Notes
 
-Version 1.0.1 - [1.0.1 Patch Notes](https://github.com/4n4c0nd4RSA/luno_trader/blob/features/update_notes/1.0.1/1.0.1.md).
+Version 1.0.1 - This update includes improvements to the Market Perception formula and configuration process. [1.0.1 Patch Notes](https://github.com/4n4c0nd4RSA/luno_trader/blob/features/update_notes/1.0.1/1.0.1.md).
 
-Version 1.0.2 has been released! This update includes the Market Momentum Indicator. For full details on the changes and new features, please see the [1.0.2 Patch Notes](https://github.com/4n4c0nd4RSA/luno_trader/blob/features/update_notes/1.0.2/1.0.2.md).
+Version 1.0.2 has been released! This update includes the Market Momentum Indicator. [1.0.2 Patch Notes](https://github.com/4n4c0nd4RSA/luno_trader/blob/features/update_notes/1.0.2/1.0.2.md).
 
 ## Features
 - Fetches and analyzes real-time order book data
