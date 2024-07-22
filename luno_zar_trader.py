@@ -14,7 +14,7 @@ import pandas as pd
 from matplotlib.animation import FuncAnimation
 from matplotlib.ticker import FuncFormatter
 from scipy.stats import linregress
-from config import API_CALL_DELAY,PAIR,PERIOD,SHORT_PERIOD,PRICE_CONFIDENCE_THRESHOLD,MARKET_PERCEPTION_THRESHOLD, MARKET_MOMENTUM_INDICATOR_THRESHOLD
+from config import API_CALL_DELAY,PAIR,PERIOD,SHORT_PERIOD,PRICE_CONFIDENCE_THRESHOLD,MARKET_PERCEPTION_THRESHOLD, MARKET_MOMENTUM_INDICATOR_THRESHOLD, AVERAGE_WINDOW_SIZE
 
 # Constants
 API_KEY = os.getenv('LUNO_API_KEY_ID')
@@ -142,17 +142,28 @@ def calculate_slope_confidence(asks, bids, current_price):
         return 0.5, 0.5
 
 # Calculate the slope
-def calculate_price_slope(df):
-    # Calculate the average angle straight line
-    start_price = df['Price'].iloc[0]
-    end_price = df['Price'].iloc[-1]
-    x_diff = (df.index[-1] - df.index[0]).total_seconds()  # Difference in seconds
-    y_diff = end_price - start_price
+def calculate_price_slope(df):    
+    # Calculate the average of the first AVERAGE_WINDOW_SIZE points
+    start_prices = df['Price'].iloc[:AVERAGE_WINDOW_SIZE]
+    start_avg_price = start_prices.mean()
+    start_avg_time = df.index[:AVERAGE_WINDOW_SIZE].mean()
+
+    # Calculate the average of the last AVERAGE_WINDOW_SIZE points
+    end_prices = df['Price'].iloc[-AVERAGE_WINDOW_SIZE:]
+    end_avg_price = end_prices.mean()
+    end_avg_time = df.index[-AVERAGE_WINDOW_SIZE:].mean()
+
+    # Calculate the slope using the average points
+    x_diff = (end_avg_time - start_avg_time).total_seconds()  # Difference in seconds
+    y_diff = end_avg_price - start_avg_price
 
     # Calculate the slope
-    slope = y_diff / x_diff
+    slope = y_diff / x_diff if x_diff != 0 else 0
+
+    # Map the slope to a value between 0 and 1
     mapped_value = 1 / (1 + np.exp(-slope))
-    return 1-mapped_value
+    
+    return 1 - mapped_value
 
 # Function to calculate price confidence
 def calculate_price_confidence():

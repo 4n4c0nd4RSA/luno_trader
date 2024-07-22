@@ -4,7 +4,7 @@ import pandas as pd
 import time
 from matplotlib.animation import FuncAnimation
 from matplotlib.dates import DateFormatter
-from config import PAIR, API_CALL_DELAY, PRICE_CONFIDENCE_THRESHOLD, MARKET_MOMENTUM_INDICATOR_THRESHOLD, MARKET_PERCEPTION_THRESHOLD
+from config import PAIR, API_CALL_DELAY, PRICE_CONFIDENCE_THRESHOLD, MARKET_MOMENTUM_INDICATOR_THRESHOLD, MARKET_PERCEPTION_THRESHOLD, AVERAGE_WINDOW_SIZE
 from luno_zar_trader import fetch_trade_history, process_data, calculate_price_slope, extract_base_currency
 import tzlocal
 
@@ -75,19 +75,27 @@ def update_plot(frame):
     else:
         price_line.set_data(df_all.index, df_all['Price'])
 
-    # Calculate and update trend lines
-    start_price, end_price = df['Price'].iloc[0], df['Price'].iloc[-1]
-    short_start_price, short_end_price = df_short['Price'].iloc[0], df_short['Price'].iloc[-1]
+    # Calculate average points for trend linesAVERAGE_WINDOW_SIZE
+    start_avg_price = df['Price'].iloc[:AVERAGE_WINDOW_SIZE].mean()
+    start_avg_time = df.index[:AVERAGE_WINDOW_SIZE].mean()
+    end_avg_price = df['Price'].iloc[-AVERAGE_WINDOW_SIZE:].mean()
+    end_avg_time = df.index[-AVERAGE_WINDOW_SIZE:].mean()
 
+    short_start_avg_price = df_short['Price'].iloc[:AVERAGE_WINDOW_SIZE].mean()
+    short_start_avg_time = df_short.index[:AVERAGE_WINDOW_SIZE].mean()
+    short_end_avg_price = df_short['Price'].iloc[-AVERAGE_WINDOW_SIZE:].mean()
+    short_end_avg_time = df_short.index[-AVERAGE_WINDOW_SIZE:].mean()
+
+    # Update or create trend lines
     if trend_line is None:
-        trend_line, = ax1.plot([df.index[0], df.index[-1]], [start_price, end_price], label='Market Perception', linestyle='--')
+        trend_line, = ax1.plot([start_avg_time, end_avg_time], [start_avg_price, end_avg_price], label='Market Perception', linestyle='--')
     else:
-        trend_line.set_data([df.index[0], df.index[-1]], [start_price, end_price])
+        trend_line.set_data([start_avg_time, end_avg_time], [start_avg_price, end_avg_price])
 
     if short_trend_line is None:
-        short_trend_line, = ax1.plot([df_short.index[0], df_short.index[-1]], [short_start_price, short_end_price], label='Price Confidence', linestyle='--')
+        short_trend_line, = ax1.plot([short_start_avg_time, short_end_avg_time], [short_start_avg_price, short_end_avg_price], label='Price Confidence', linestyle='--')
     else:
-        short_trend_line.set_data([df_short.index[0], df_short.index[-1]], [short_start_price, short_end_price])
+        short_trend_line.set_data([short_start_avg_time, short_end_avg_time], [short_start_avg_price, short_end_avg_price])
 
     mapped_value = calculate_price_slope(df)
     short_mapped_value = 1 - calculate_price_slope(df_short)
@@ -132,7 +140,6 @@ def update_plot(frame):
     else:
         market_perception_line.set_data(*zip(*market_perception_data))
         market_perception_line.set_label(f'Market Perception ({mapped_value:.2f})')
-    
 
     # Update or create the MMI delta line on the third graph
     if mmi_delta_line is None:

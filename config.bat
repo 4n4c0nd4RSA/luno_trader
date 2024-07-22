@@ -9,6 +9,7 @@ set "API_CALL_DELAY=60"
 set "PERIOD=10"
 set "SHORT_PERIOD=3"
 set "RANGE=200"
+set "AVERAGE_WINDOW_SIZE=30"
 
 echo Please provide the following values (press Enter to use the default):
 
@@ -20,6 +21,7 @@ set /p "API_CALL_DELAY=Enter the API call delay in seconds (default: %API_CALL_D
 set /p "PERIOD=Enter the period value (default: %PERIOD%, max 24): "
 set /p "SHORT_PERIOD=Enter the short period value (default: %SHORT_PERIOD%): "
 set /p "RANGE=Enter the depth chart range in thousands (default: %RANGE%): "
+set /p "AVERAGE_WINDOW_SIZE=Enter the average window in transactions (default: %AVERAGE_WINDOW_SIZE%): "
 
 (
 echo PAIR = '%PAIR%'
@@ -30,6 +32,7 @@ echo API_CALL_DELAY = %API_CALL_DELAY%
 echo PERIOD = %PERIOD%
 echo SHORT_PERIOD = %SHORT_PERIOD%
 echo RANGE = %RANGE%
+echo AVERAGE_WINDOW_SIZE = %AVERAGE_WINDOW_SIZE%
 ) > config.py
 
 echo Config file updated successfully.
