@@ -6,7 +6,7 @@ import logging
 from matplotlib.animation import FuncAnimation
 from scipy.stats import linregress
 from config import PAIR, RANGE
-from luno_zar_trader import extract_base_currency
+from luno_trader import extract_base_currency
 
 # Constants
 PRICE_DELTA = 1000 * RANGE
