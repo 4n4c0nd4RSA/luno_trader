@@ -10,9 +10,9 @@ set "PERIOD=10"
 set "SHORT_PERIOD=3"
 set "RANGE=200"
 set "AVERAGE_WINDOW_SIZE=30"
-set "MACD_FAST_PERIOD=12"
-set "MACD_SLOW_PERIOD=26"
-set "MACD_SIGNAL_PERIOD=9"
+set "MACD_FAST_PERIOD=120"
+set "MACD_SLOW_PERIOD=260"
+set "MACD_SIGNAL_PERIOD=90"
 set "MACD_CANDLE_PERIOD=300"
 
 echo Please provide the following values (press Enter to use the default):
