@@ -14,18 +14,12 @@ import pandas as pd
 from matplotlib.animation import FuncAnimation
 from matplotlib.ticker import FuncFormatter
 from scipy.stats import linregress
-from config import API_CALL_DELAY,PAIR,PERIOD,SHORT_PERIOD,PRICE_CONFIDENCE_THRESHOLD,MARKET_PERCEPTION_THRESHOLD, MARKET_MOMENTUM_INDICATOR_THRESHOLD, AVERAGE_WINDOW_SIZE
+from config import API_CALL_DELAY,PAIR,PERIOD,SHORT_PERIOD,PRICE_CONFIDENCE_THRESHOLD,MARKET_PERCEPTION_THRESHOLD, MACD_FAST_PERIOD, AVERAGE_WINDOW_SIZE, MACD_SLOW_PERIOD, MACD_SIGNAL_PERIOD, MACD_CANDLE_PERIOD
 
 # Constants
 API_KEY = os.getenv('LUNO_API_KEY_ID')
 API_SECRET = os.getenv('LUNO_API_KEY_SECRET')
 VERSION = '1.0.2'
-
-# MACD parameters
-FAST_PERIOD = 120
-SLOW_PERIOD = 260
-SIGNAL_PERIOD = 90
-CANDLE_PERIOD = 300  # 5-minute candles
 
 # start time
 start_time = time.gmtime()
@@ -481,8 +475,8 @@ signal.signal(signal.SIGINT, signal_handler)
 def get_candles():
     try:
         end_time = int(time.time() * 1000)
-        start_time = end_time - (SLOW_PERIOD + SIGNAL_PERIOD) * CANDLE_PERIOD * 1000
-        candles = client.get_candles(pair=PAIR, since=start_time, duration=CANDLE_PERIOD)
+        start_time = end_time - (MACD_SLOW_PERIOD + MACD_SIGNAL_PERIOD) * MACD_CANDLE_PERIOD * 1000
+        candles = client.get_candles(pair=PAIR, since=start_time, duration=MACD_CANDLE_PERIOD)
         return candles['candles']
     except Exception as e:
         logging.error(f'Error getting candle data: {e}')
@@ -495,10 +489,10 @@ def calculate_macd():
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     df.set_index('timestamp', inplace=True)
     
-    exp1 = df['close'].ewm(span=FAST_PERIOD, adjust=False).mean()
-    exp2 = df['close'].ewm(span=SLOW_PERIOD, adjust=False).mean()
+    exp1 = df['close'].ewm(span=MACD_FAST_PERIOD, adjust=False).mean()
+    exp2 = df['close'].ewm(span=MACD_SLOW_PERIOD, adjust=False).mean()
     macd = exp1 - exp2
-    signal = macd.ewm(span=SIGNAL_PERIOD, adjust=False).mean()
+    signal = macd.ewm(span=MACD_SIGNAL_PERIOD, adjust=False).mean()
     
     return macd.iloc[-1], signal.iloc[-1]
 

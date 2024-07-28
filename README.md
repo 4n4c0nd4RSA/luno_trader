@@ -161,9 +161,9 @@ The bot will:
 To run other analysis and graphing tools:
 
 ```
-python luno_confidence.py
-python luno_depth.py
-python luno_price.py
+python luno_graph_market_perception.py
+python luno_graph_depth_confidence.py
+python luno_graph_price_confidence.py
 python luno_arbitrage.py
 ```
 
