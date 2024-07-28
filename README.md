@@ -143,12 +143,12 @@ To start the trading bot in demo mode (no real trades):
 1. Open a command prompt or terminal in the project folder
 2. Run:
     ```
-    python luno_zar_trader.py
+    python luno_trader.py
     ```
 
 To start the bot with real trading (uses actual funds):
 ```
-python luno_zar_trader.py --true-trade
+python luno_trader.py --true-trade
 ```
 
 The bot will:

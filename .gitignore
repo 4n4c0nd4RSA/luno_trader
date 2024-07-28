@@ -1,5 +1,4 @@
 *.log
 __pycache__/
 python-3.9.13-amd64.exe
-trading_bot.log
 trader-notes.txt

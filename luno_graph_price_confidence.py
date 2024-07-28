@@ -5,7 +5,7 @@ import time
 from matplotlib.animation import FuncAnimation
 from matplotlib.dates import DateFormatter
 from config import PAIR, API_CALL_DELAY, PRICE_CONFIDENCE_THRESHOLD, MARKET_MOMENTUM_INDICATOR_THRESHOLD, MARKET_PERCEPTION_THRESHOLD, AVERAGE_WINDOW_SIZE
-from luno_zar_trader import fetch_trade_history, process_data, calculate_price_slope, extract_base_currency
+from luno_trader import fetch_trade_history, process_data, calculate_price_slope, extract_base_currency
 import tzlocal
 
 VERSION = '1.0.2'
@@ -33,17 +33,14 @@ market_perception_data = []
 mmi_delta_data = []
 
 # Global variables for axis limits
-ax1_xlim = None
-ax1_ylim = None
-ax2_xlim = None
-ax3_xlim = None
-ax3_ylim = None
+global_xlim = None
+global_ylim = None
 
 def update_plot(frame):
     global price_line, trend_line, short_trend_line, market_momentum_indicator_line, price_confidence_line, market_perception_line, mmi_delta_line
     global mmi_delta_text
     global market_momentum_indicator_data, price_confidence_data, market_perception_data, mmi_delta_data
-    global ax1_xlim, ax1_ylim, ax2_xlim, ax3_xlim, ax3_ylim
+    global global_xlim, global_ylim
     global market_momentum_indicator_old
 
     max_retries = 3
@@ -75,7 +72,7 @@ def update_plot(frame):
     else:
         price_line.set_data(df_all.index, df_all['Price'])
 
-    # Calculate average points for trend linesAVERAGE_WINDOW_SIZE
+    # Calculate average points for trend lines
     start_avg_price = df['Price'].iloc[:AVERAGE_WINDOW_SIZE].mean()
     start_avg_time = df.index[:AVERAGE_WINDOW_SIZE].mean()
     end_avg_price = df['Price'].iloc[-AVERAGE_WINDOW_SIZE:].mean()
@@ -160,13 +157,19 @@ def update_plot(frame):
     ax3.relim()
     ax3.autoscale_view()
 
-    # Store the current axis limits if they haven't been set yet
-    if ax1_xlim is None:
-        ax1_xlim = ax1.get_xlim()
-        ax1_ylim = ax1.get_ylim()
-        ax2_xlim = ax2.get_xlim()
-        ax3_xlim = ax3.get_xlim()
-        ax3_ylim = ax3.get_ylim()
+    # Update global limits
+    current_xlim = ax1.get_xlim()
+    current_ylim = ax1.get_ylim()
+    
+    if global_xlim is None:
+        global_xlim = current_xlim
+    else:
+        global_xlim = (min(global_xlim[0], current_xlim[0]), max(global_xlim[1], current_xlim[1]))
+    
+    if global_ylim is None:
+        global_ylim = current_ylim
+    else:
+        global_ylim = (min(global_ylim[0], current_ylim[0]), max(global_ylim[1], current_ylim[1]))
 
     ax1.set_title(f'{extract_base_currency(PAIR)}/ZAR Price History')
     ax1.set_xlabel('Date')
@@ -195,13 +198,27 @@ def update_plot(frame):
         plt.xticks(rotation=45)
 
 def reset_zoom(event):
-    global ax1_xlim, ax1_ylim, ax2_xlim, ax3_xlim, ax3_ylim
-    ax1.set_xlim(ax1_xlim)
-    ax1.set_ylim(ax1_ylim)
-    ax2.set_xlim(ax2_xlim)
-    ax2.set_ylim(0, 1)  # Reset y-axis limits for ax2 to fixed values
-    ax3.set_xlim(ax3_xlim)
-    ax3.set_ylim(ax3_ylim)
+    if global_xlim is not None and global_ylim is not None:
+        # Reset x-axis limits for all subplots
+        ax1.set_xlim(global_xlim)
+        ax2.set_xlim(global_xlim)
+        ax3.set_xlim(global_xlim)
+        
+        # Reset y-axis limits for ax1
+        ymin, ymax = global_ylim
+        yrange = ymax - ymin
+        ax1.set_ylim(ymin - yrange * 0.1, ymax + yrange * 0.1)
+    else:
+        # Fallback to autoscaling if global limits are not set
+        ax1.relim()
+        ax1.autoscale_view()
+        ax2.relim()
+        ax3.relim()
+        ax3.autoscale_view()
+    
+    # Always set fixed y-limits for ax2
+    ax2.set_ylim(0, 1)
+    
     plt.draw()
 
 # Set up the plot
@@ -214,11 +231,11 @@ ax2.axhline(y=0.5, color='gray', alpha=0.7)
 ax2.axhline(y=0, color='black', alpha=0.7)
 
 ax2.axhline(y=0.5 + PRICE_CONFIDENCE_THRESHOLD, color='g', linestyle='--', label=f'PC Buy Limit ({0.5 + PRICE_CONFIDENCE_THRESHOLD})')
-ax2.axhline(y=0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#0db542', linestyle='--', label=f'MMI Buy Limit ({0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
+# ax2.axhline(y=0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#0db542', linestyle='--', label=f'MMI Buy Limit ({0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
 ax2.axhline(y=0.5 + MARKET_PERCEPTION_THRESHOLD, color='lime', linestyle='--', label=f'MP Buy Limit ({0.5 + MARKET_PERCEPTION_THRESHOLD})')
 ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
 ax2.axhline(y=0.5 - MARKET_PERCEPTION_THRESHOLD, color='pink', linestyle='--', label=f'MP Sell Limit ({0.5 - MARKET_PERCEPTION_THRESHOLD})')
-ax2.axhline(y=0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#f5b8cf', linestyle='--', label=f'MMI Sell Limit ({0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
+# ax2.axhline(y=0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#f5b8cf', linestyle='--', label=f'MMI Sell Limit ({0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
 ax2.axhline(y=0.5 - PRICE_CONFIDENCE_THRESHOLD, color='r', linestyle='--', label=f'PC Sell Limit ({0.5 - PRICE_CONFIDENCE_THRESHOLD})')
 
 # Manually adjust the subplot layout
@@ -226,7 +243,7 @@ fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.95, hspace=0.3)
 
 # Add custom home button with adjusted position
 button_ax = fig.add_axes([0.85, 0.01, 0.1, 0.03])
-home_button = Button(button_ax, 'Reset Zoom')
+home_button = Button(button_ax, 'Reset Zoom (Full Data Range)')
 home_button.on_clicked(reset_zoom)
 
 # Create the animation
