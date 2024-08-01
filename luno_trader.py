@@ -219,11 +219,10 @@ def get_current_btc_percentage(ticker_data):
 def determine_macd_action(ticker_data, macd, signalValue, confidence, short_confidence):
     global ZAR_balance, BTC_balance
     # Determine action based on the target confidence and threshold
-    mmi = (confidence + short_confidence) / 2
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
-    if mmi >= (0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD) and short_confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD) and macd > (signalValue) and signalValue < 0 and ZAR_balance > 0.0001 * float(ticker_data['bid']):
+    if confidence >= (0.5 + MARKET_PERCEPTION_THRESHOLD) and short_confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD) and macd > (signalValue + 100) and ZAR_balance > 0.0001 * float(ticker_data['bid']):
         return 'Buy'
-    elif mmi <= (0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD) and short_confidence <= (0.5 - PRICE_CONFIDENCE_THRESHOLD) and macd < (signalValue) and signalValue > 0 and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
+    elif confidence <= (0.5 - MARKET_PERCEPTION_THRESHOLD) and short_confidence <= (0.5 - PRICE_CONFIDENCE_THRESHOLD) and macd < (signalValue - 100) and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
         return 'Sell'
     else:
         return 'Nothing'
