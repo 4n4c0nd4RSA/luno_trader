@@ -2,9 +2,11 @@
 
 This project is a trading bot for the Luno cryptocurrency exchange, designed to monitor the CRYPTO/ZAR trading pair and make trading decisions based on historical order book data. The bot calculates a confidence level and adjusts the CRYPTO/ZAR ratio in the wallet accordingly. It includes features to record order book history, determine trading actions, and create graphs of various aspects of the trading process.
 
-## Latest Updates
+## Patch Notes
 
-Version 1.0.1 has been released! This update includes improvements to the Market Perception formula and configuration process. For full details on the changes and new features, please see the [1.0.1 Patch Notes](https://github.com/4n4c0nd4RSA/luno_trader/blob/features/update_notes/1.0.1/1.0.1.md).
+Version 1.0.1 - This update includes improvements to the Market Perception formula and configuration process. [1.0.1 Patch Notes](https://github.com/4n4c0nd4RSA/luno_trader/blob/features/update_notes/1.0.1/1.0.1.md).
+
+Version 1.0.2 has been released! This update includes the Market Momentum Indicator. [1.0.2 Patch Notes](https://github.com/4n4c0nd4RSA/luno_trader/blob/features/update_notes/1.0.2/1.0.2.md).
 
 ## Features
 - Fetches and analyzes real-time order book data
@@ -141,12 +143,12 @@ To start the trading bot in demo mode (no real trades):
 1. Open a command prompt or terminal in the project folder
 2. Run:
     ```
-    python luno_zar_trader.py
+    python luno_trader.py
     ```
 
 To start the bot with real trading (uses actual funds):
 ```
-python luno_zar_trader.py --true-trade
+python luno_trader.py --true-trade
 ```
 
 The bot will:
@@ -159,9 +161,9 @@ The bot will:
 To run other analysis and graphing tools:
 
 ```
-python luno_confidence.py
-python luno_depth.py
-python luno_price.py
+python luno_graph_market_perception.py
+python luno_graph_depth_confidence.py
+python luno_graph_price_confidence.py
 python luno_arbitrage.py
 ```
 
