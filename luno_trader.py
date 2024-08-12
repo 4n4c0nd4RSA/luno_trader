@@ -216,28 +216,18 @@ def get_current_btc_percentage(ticker_data):
         current_btc_percentage = btc_to_zar / total_value_zar
     return current_btc_percentage
 
-def determine_macd_action(ticker_data, macd, signalValue, confidence, short_confidence):
+# Function to determine the action (Buy, Sell, or Nothing) based on confidence
+def determine_action(ticker_data, macd, signalValue, market_perception, confidence):
     global ZAR_balance, BTC_balance
     # Determine action based on the target confidence and threshold
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
-    if confidence >= (0.5 + MARKET_PERCEPTION_THRESHOLD) and short_confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD) and macd > (signalValue + 100) and ZAR_balance > 0.0001 * float(ticker_data['bid']):
+    if market_perception >= (0.5 + MARKET_PERCEPTION_THRESHOLD) and confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD) and macd > (signalValue + 100) and ZAR_balance > 0.0001 * float(ticker_data['bid']):
         return 'Buy'
-    elif confidence <= (0.5 - MARKET_PERCEPTION_THRESHOLD) and short_confidence <= (0.5 - PRICE_CONFIDENCE_THRESHOLD) and macd < (signalValue - 100) and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
+    elif market_perception <= (0.5 - MARKET_PERCEPTION_THRESHOLD) and confidence <= (0.5 - PRICE_CONFIDENCE_THRESHOLD) and macd < (signalValue - 100) and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
         return 'Sell'
     else:
         return 'Nothing'
 
-# Function to determine the action (Buy, Sell, or Nothing) based on confidence
-def determine_action(ticker_data, confidence, short_confidence):
-    global ZAR_balance, BTC_balance
-    # Determine action based on the target confidence and threshold
-    btc_to_zar = BTC_balance * float(ticker_data['bid'])
-    if confidence >= (0.5 + MARKET_PERCEPTION_THRESHOLD) and short_confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD) and ZAR_balance >  (0.0001 * float(ticker_data['bid'])):
-        return 'Buy'
-    elif confidence <= (0.5 - MARKET_PERCEPTION_THRESHOLD) and short_confidence <= (0.5 - PRICE_CONFIDENCE_THRESHOLD) and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
-        return 'Sell'
-    else:
-        return 'Nothing'
 
 # Function to get minimum trade sizes
 def get_minimum_trade_sizes():
@@ -405,8 +395,8 @@ def update_plot(frame):
         
         # Plot wallet values on the top subplot
         ax1.plot(time_labels, wallet_values[:min_length], label='Total Wallet Value in ZAR')
-        ax1.plot(time_labels, btc_values_in_zar[:min_length], label=f'{extract_base_currency(PAIR)} Value in ZAR')
-        ax1.plot(time_labels, zar_values[:min_length], label='ZAR Value')
+        # ax1.plot(time_labels, btc_values_in_zar[:min_length], label=f'{extract_base_currency(PAIR)} Value in ZAR')
+        # ax1.plot(time_labels, zar_values[:min_length], label='ZAR Value')
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Value (ZAR)')
         ax1.set_title('Wallet Values Over Time')
@@ -422,11 +412,11 @@ def update_plot(frame):
         ax2.plot(time_labels, market_momentum_indicator_values, label=f'Market Momentum Indicator ({current_mmi:.2f})', color='#f51bbe')
         ax2.plot(time_labels, confidence_values, label=f'Market Perception ({current_confidence:.2f})', color='#efafff')
         ax2.axhline(y=0.5 + PRICE_CONFIDENCE_THRESHOLD, color='g', linestyle='--', label=f'PC Buy Limit ({0.5 + PRICE_CONFIDENCE_THRESHOLD})')
-        ax2.axhline(y=0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#0db542', linestyle='--', label=f'MMI Buy Limit ({0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
-        # ax2.axhline(y=0.5 + MARKET_PERCEPTION_THRESHOLD, color='lime', linestyle='--', label=f'MP Buy Limit ({0.5 + MARKET_PERCEPTION_THRESHOLD})')
+        # ax2.axhline(y=0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#0db542', linestyle='--', label=f'MMI Buy Limit ({0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
+        ax2.axhline(y=0.5 + MARKET_PERCEPTION_THRESHOLD, color='lime', linestyle='--', label=f'MP Buy Limit ({0.5 + MARKET_PERCEPTION_THRESHOLD})')
         ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
-        # ax2.axhline(y=0.5 - MARKET_PERCEPTION_THRESHOLD, color='pink', linestyle='--', label=f'MP Sell Limit ({0.5 - MARKET_PERCEPTION_THRESHOLD})')
-        ax2.axhline(y=0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#f5b8cf', linestyle='--', label=f'MMI Sell Limit ({0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
+        ax2.axhline(y=0.5 - MARKET_PERCEPTION_THRESHOLD, color='pink', linestyle='--', label=f'MP Sell Limit ({0.5 - MARKET_PERCEPTION_THRESHOLD})')
+        # ax2.axhline(y=0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#f5b8cf', linestyle='--', label=f'MMI Sell Limit ({0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
         ax2.axhline(y=0.5 - PRICE_CONFIDENCE_THRESHOLD, color='r', linestyle='--', label=f'PC Sell Limit ({0.5 - PRICE_CONFIDENCE_THRESHOLD})')
         ax2.set_xlabel('Time')
         ax2.set_ylabel('Price Confidence')
@@ -522,10 +512,8 @@ def trading_loop(true_trade):
                 conf_delta = confidence - old_confidence 
             old_confidence = confidence
 
-            # action = determine_action(ticker_data, confidence, short_confidence)
-
             macd, signalValue = calculate_macd()
-            action = determine_macd_action(ticker_data, macd, signalValue, confidence, short_confidence)
+            action = determine_action(ticker_data, macd, signalValue, confidence, short_confidence)
 
             if abs(conf_delta) > 0.01 or action in ['Buy', 'Sell']:
                 logging.info(f"---------------------------------")
