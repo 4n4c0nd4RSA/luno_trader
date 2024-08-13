@@ -497,11 +497,11 @@ if __name__ == '__main__':
     fig.ax1, fig.ax2, fig.ax3, fig.ax4, fig.ax5 = ax1, ax2, ax3, ax4, ax5
     
     # Create toggle buttons
-    btn_ax1 = plt.axes([0.81, 0.95, 0.1, 0.03])
-    btn_ax2 = plt.axes([0.81, 0.91, 0.1, 0.03])
-    btn_ax3 = plt.axes([0.81, 0.87, 0.1, 0.03])
-    btn_ax4 = plt.axes([0.81, 0.83, 0.1, 0.03])
-    btn_ax5 = plt.axes([0.81, 0.79, 0.1, 0.03])
+    btn_ax1 = plt.axes([0.13, 0.95, 0.1, 0.03])
+    btn_ax2 = plt.axes([0.29, 0.95, 0.1, 0.03])
+    btn_ax3 = plt.axes([0.47, 0.95, 0.1, 0.03])
+    btn_ax4 = plt.axes([0.65, 0.95, 0.1, 0.03])
+    btn_ax5 = plt.axes([0.81, 0.95, 0.1, 0.03])
     
     btn1 = Button(btn_ax1, 'Wallet')
     btn2 = Button(btn_ax2, 'Indicators')
