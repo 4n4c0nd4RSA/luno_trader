@@ -11,6 +11,8 @@ import luno_python.client as luno
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.widgets import Button
+from matplotlib.gridspec import GridSpec
 from matplotlib.animation import FuncAnimation
 from matplotlib.ticker import FuncFormatter
 from scipy.stats import linregress
@@ -47,11 +49,45 @@ macd_values = []
 signal_values = []
 macd_signal_delta_values = []
 
+visibility = {
+    'wallet': True,
+    'market': True,
+    'macd': True,
+    'price': True,
+    'delta': True
+}
+
 macd_signal = None
 since = int(time.time()*1000)-23*60*60*1000
 all_trades = []
 
 data_queue = queue.Queue()
+
+def toggle_visibility(ax_name):
+    def toggle(event):
+        visibility[ax_name] = not visibility[ax_name]
+        update_layout()
+        plt.draw()
+    return toggle
+
+def update_layout():
+    visible_plots = [ax for ax, is_visible in visibility.items() if is_visible]
+    n_visible = len(visible_plots)
+    
+    if n_visible == 0:
+        return  # No plots to show
+    
+    gs = GridSpec(n_visible, 1, figure=fig, height_ratios=[1]*n_visible)
+    
+    for i, ax_name in enumerate(visibility.keys()):
+        ax = getattr(fig, f'ax{i+1}')
+        if visibility[ax_name]:
+            ax.set_visible(True)
+            ax.set_position(gs[visible_plots.index(ax_name)].get_position(fig))
+        else:
+            ax.set_visible(False)
+    
+    fig.canvas.draw_idle()
 
 def extract_base_currency(pair=PAIR):
     if pair.endswith('ZAR'):
@@ -362,116 +398,6 @@ def plot_wallet_values():
     plt.legend(loc='center left', bbox_to_anchor=(0, 0.5))
     plt.show()
 
-# Function to update the plot
-def update_plot(frame):
-    global time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, short_confidence_values, market_momentum_indicator_values, price_values, macd_values, signal_values, macd_signal_delta_values, fig, ax1, ax2, ax3, ax4, ax5, data_queue
-    try:
-        while not data_queue.empty():
-            data = data_queue.get_nowait()
-            time_steps.append(data['time'])
-            wallet_values.append(data['wallet_value'])
-            btc_values_in_zar.append(data['btc_value_in_zar'])
-            zar_values.append(data['zar_value'])
-            confidence_values.append(data['confidence'])
-            short_confidence_values.append(data['short_confidence'])
-            market_momentum_indicator_values.append((data['confidence'] + data['short_confidence'])/2)
-            price_values.append(data['price'])
-            macd_values.append(data['macd'])
-            signal_values.append(data['signal'])
-            macd_signal_delta_values.append(data['macd_signal_delta'])
-
-        # Ensure all lists are the same length
-        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(short_confidence_values), len(price_values), len(market_momentum_indicator_values), len(macd_values), len(signal_values), len(macd_signal_delta_values))
-        time_steps = time_steps[-min_length:]
-        wallet_values = wallet_values[-min_length:]
-        btc_values_in_zar = btc_values_in_zar[-min_length:]
-        zar_values = zar_values[-min_length:]
-        confidence_values = confidence_values[-min_length:]
-        short_confidence_values = short_confidence_values[-min_length:]
-        market_momentum_indicator_values = market_momentum_indicator_values[-min_length:]
-        price_values = price_values[-min_length:]
-        macd_values = macd_values[-min_length:]
-        signal_values = signal_values[-min_length:]
-        macd_signal_delta_values = macd_signal_delta_values[-min_length:]
-
-        ax1.clear()
-        ax2.clear()
-        ax3.clear()
-        ax4.clear()
-        ax5.clear()
-
-        local_tz = tzlocal.get_localzone()
-        time_labels = pd.to_datetime(time_steps[:min_length], unit='s').tz_localize('UTC').tz_convert(local_tz)
-        
-        # Plot wallet values on the top subplot
-        ax1.plot(time_labels, wallet_values[:min_length], label='Total Wallet Value in ZAR')
-        # ax1.plot(time_labels, btc_values_in_zar[:min_length], label=f'{extract_base_currency(PAIR)} Value in ZAR')
-        # ax1.plot(time_labels, zar_values[:min_length], label='ZAR Value')
-        ax1.set_xlabel('Time')
-        ax1.set_ylabel('Value (ZAR)')
-        ax1.set_title('Wallet Values Over Time')
-        ax1.legend(loc='center left', bbox_to_anchor=(0, 0.5))
-        ax1.tick_params(axis='x', rotation=45)
-        ax1.yaxis.set_major_formatter(FuncFormatter(format_large_number))
-        
-        # Plot confidence on the middle subplot
-        current_confidence = confidence_values[-1] if confidence_values else 0
-        current_short_confidence = short_confidence_values[-1] if short_confidence_values else 0
-        current_mmi = market_momentum_indicator_values[-1] if market_momentum_indicator_values else 0
-        ax2.plot(time_labels, short_confidence_values, label=f'Price Confidence ({current_short_confidence:.2f})', color='#c76eff')
-        ax2.plot(time_labels, market_momentum_indicator_values, label=f'Market Momentum Indicator ({current_mmi:.2f})', color='#f51bbe')
-        ax2.plot(time_labels, confidence_values, label=f'Market Perception ({current_confidence:.2f})', color='#efafff')
-        ax2.axhline(y=0.5 + PRICE_CONFIDENCE_THRESHOLD, color='g', linestyle='--', label=f'PC Buy Limit ({0.5 + PRICE_CONFIDENCE_THRESHOLD})')
-        # ax2.axhline(y=0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#0db542', linestyle='--', label=f'MMI Buy Limit ({0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
-        ax2.axhline(y=0.5 + MARKET_PERCEPTION_THRESHOLD, color='lime', linestyle='--', label=f'MP Buy Limit ({0.5 + MARKET_PERCEPTION_THRESHOLD})')
-        ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
-        ax2.axhline(y=0.5 - MARKET_PERCEPTION_THRESHOLD, color='pink', linestyle='--', label=f'MP Sell Limit ({0.5 - MARKET_PERCEPTION_THRESHOLD})')
-        # ax2.axhline(y=0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#f5b8cf', linestyle='--', label=f'MMI Sell Limit ({0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
-        ax2.axhline(y=0.5 - PRICE_CONFIDENCE_THRESHOLD, color='r', linestyle='--', label=f'PC Sell Limit ({0.5 - PRICE_CONFIDENCE_THRESHOLD})')
-        ax2.set_xlabel('Time')
-        ax2.set_ylabel('Price Confidence')
-        ax2.set_title('Market Indicators')
-        ax2.set_ylim(0, 1)  # Set y-axis limits for confidence (0 to 1)
-        ax2.legend(loc='center left', bbox_to_anchor=(0, 0.5))
-        ax2.tick_params(axis='x', rotation=45)
-        
-        # Plot MACD on the middle subplot
-        ax3.plot(time_labels, macd_values, label='MACD')
-        ax3.plot(time_labels, signal_values, label='Signal Line')
-        ax3.axhline(y=0, color='r', linestyle='--')
-        ax3.set_xlabel('Time')
-        ax3.set_ylabel('MACD')
-        ax3.set_title('MACD Indicator')
-        ax3.legend(loc='center left', bbox_to_anchor=(0, 0.5))
-        ax3.tick_params(axis='x', rotation=45)
-        
-        # Plot price on the bottom subplot
-        ax4.plot(time_labels, price_values, label=f'{extract_base_currency(PAIR)} Price', color='green')
-        ax4.set_xlabel('Time')
-        ax4.set_ylabel('Price (ZAR)')
-        ax4.set_title(f'{extract_base_currency(PAIR)} Price Over Time')
-        ax4.legend(loc='center left', bbox_to_anchor=(0, 0.5))
-        ax4.tick_params(axis='x', rotation=45)
-        ax4.yaxis.set_major_formatter(FuncFormatter(format_large_number))
-
-        ax5.plot(time_labels, macd_signal_delta_values, label='MACD-Signal Delta', color='purple')
-        ax5.axhline(y=0, color='r', linestyle='--')
-        ax5.set_xlabel('Time')
-        ax5.set_ylabel('MACD-Signal Delta')
-        ax5.set_title('MACD-Signal Delta Over Time')
-        ax5.legend(loc='center left', bbox_to_anchor=(0, 0.5))
-        ax5.tick_params(axis='x', rotation=45)
-
-        ax1.autoscale_view(scalex=True, scaley=True)
-        ax2.autoscale_view(scalex=True, scaley=True)
-        ax3.autoscale_view(scalex=True, scaley=True)
-        ax4.autoscale_view(scalex=True, scaley=True)
-        ax5.autoscale_view(scalex=True, scaley=True)
-        
-        plt.tight_layout()  # Adjust the layout to prevent overlap
-    except Exception as e:
-        logging.error(f"Error updating plot: {e}")
-
 # Graceful shutdown handler
 def signal_handler(sig, frame):
     logging.info('Gracefully shutting down...')
@@ -561,7 +487,33 @@ def trading_loop(true_trade):
 
 if __name__ == '__main__':
     # Set up the plot
-    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, 1, figsize=(12, 25), sharex=True)
+    fig = plt.figure(figsize=(12, 25))
+    gs = GridSpec(5, 1, figure=fig)
+    ax1 = fig.add_subplot(gs[0])
+    ax2 = fig.add_subplot(gs[1], sharex=ax1)
+    ax3 = fig.add_subplot(gs[2], sharex=ax1)
+    ax4 = fig.add_subplot(gs[3], sharex=ax1)
+    ax5 = fig.add_subplot(gs[4], sharex=ax1)
+    fig.ax1, fig.ax2, fig.ax3, fig.ax4, fig.ax5 = ax1, ax2, ax3, ax4, ax5
+    
+    # Create toggle buttons
+    btn_ax1 = plt.axes([0.81, 0.95, 0.1, 0.03])
+    btn_ax2 = plt.axes([0.81, 0.91, 0.1, 0.03])
+    btn_ax3 = plt.axes([0.81, 0.87, 0.1, 0.03])
+    btn_ax4 = plt.axes([0.81, 0.83, 0.1, 0.03])
+    btn_ax5 = plt.axes([0.81, 0.79, 0.1, 0.03])
+    
+    btn1 = Button(btn_ax1, 'Wallet')
+    btn2 = Button(btn_ax2, 'Indicators')
+    btn3 = Button(btn_ax3, 'MACD')
+    btn4 = Button(btn_ax4, 'Price')
+    btn5 = Button(btn_ax5, 'Delta')
+    
+    btn1.on_clicked(toggle_visibility('wallet'))
+    btn2.on_clicked(toggle_visibility('market'))
+    btn3.on_clicked(toggle_visibility('macd'))
+    btn4.on_clicked(toggle_visibility('price'))
+    btn5.on_clicked(toggle_visibility('delta'))
 
     parser = argparse.ArgumentParser(description='Luno Trading Bot')
     parser.add_argument('--true-trade', action='store_true', help='Execute real trades')
@@ -576,5 +528,112 @@ if __name__ == '__main__':
     trading_thread = threading.Thread(target=trading_loop, args=(args.true_trade,))
     trading_thread.daemon = True
     trading_thread.start()
+
+    # Function to update the plot
+    def update_plot(frame):
+        global time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, short_confidence_values, market_momentum_indicator_values, price_values, macd_values, signal_values, macd_signal_delta_values, fig, data_queue
+        try:
+            while not data_queue.empty():
+                data = data_queue.get_nowait()
+                time_steps.append(data['time'])
+                wallet_values.append(data['wallet_value'])
+                btc_values_in_zar.append(data['btc_value_in_zar'])
+                zar_values.append(data['zar_value'])
+                confidence_values.append(data['confidence'])
+                short_confidence_values.append(data['short_confidence'])
+                market_momentum_indicator_values.append((data['confidence'] + data['short_confidence'])/2)
+                price_values.append(data['price'])
+                macd_values.append(data['macd'])
+                signal_values.append(data['signal'])
+                macd_signal_delta_values.append(data['macd_signal_delta'])
+
+            # Ensure all lists are the same length
+            min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(short_confidence_values), len(price_values), len(market_momentum_indicator_values), len(macd_values), len(signal_values), len(macd_signal_delta_values))
+            time_steps = time_steps[-min_length:]
+            wallet_values = wallet_values[-min_length:]
+            btc_values_in_zar = btc_values_in_zar[-min_length:]
+            zar_values = zar_values[-min_length:]
+            confidence_values = confidence_values[-min_length:]
+            short_confidence_values = short_confidence_values[-min_length:]
+            market_momentum_indicator_values = market_momentum_indicator_values[-min_length:]
+            price_values = price_values[-min_length:]
+            macd_values = macd_values[-min_length:]
+            signal_values = signal_values[-min_length:]
+            macd_signal_delta_values = macd_signal_delta_values[-min_length:]
+
+            local_tz = tzlocal.get_localzone()
+            time_labels = pd.to_datetime(time_steps[:min_length], unit='s').tz_localize('UTC').tz_convert(local_tz)
+
+            if visibility['wallet']:
+                ax1.clear()
+                # Plot wallet values on the top subplot
+                ax1.plot(time_labels, wallet_values[:min_length], label='Total Wallet Value in ZAR')
+                ax1.set_xlabel('Time')
+                ax1.set_ylabel('Value (ZAR)')
+                ax1.set_title('Wallet Values Over Time')
+                ax1.legend(loc='center left', bbox_to_anchor=(0, 0.5))
+                ax1.tick_params(axis='x', rotation=45)
+                ax1.yaxis.set_major_formatter(FuncFormatter(format_large_number))
+
+            if visibility['market']:
+                ax2.clear()
+                # Plot confidence on the middle subplot
+                current_confidence = confidence_values[-1] if confidence_values else 0
+                current_short_confidence = short_confidence_values[-1] if short_confidence_values else 0
+                current_mmi = market_momentum_indicator_values[-1] if market_momentum_indicator_values else 0
+                ax2.plot(time_labels, short_confidence_values, label=f'Price Confidence ({current_short_confidence:.2f})', color='#c76eff')
+                ax2.plot(time_labels, market_momentum_indicator_values, label=f'Market Momentum Indicator ({current_mmi:.2f})', color='#f51bbe')
+                ax2.plot(time_labels, confidence_values, label=f'Market Perception ({current_confidence:.2f})', color='#efafff')
+                ax2.axhline(y=0.5 + PRICE_CONFIDENCE_THRESHOLD, color='g', linestyle='--', label=f'PC Buy Limit ({0.5 + PRICE_CONFIDENCE_THRESHOLD})')
+                # ax2.axhline(y=0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#0db542', linestyle='--', label=f'MMI Buy Limit ({0.5 + MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
+                ax2.axhline(y=0.5 + MARKET_PERCEPTION_THRESHOLD, color='lime', linestyle='--', label=f'MP Buy Limit ({0.5 + MARKET_PERCEPTION_THRESHOLD})')
+                ax2.axhline(y=0.5, color='black', linestyle='--', label='Midpoint (0.5)')
+                ax2.axhline(y=0.5 - MARKET_PERCEPTION_THRESHOLD, color='pink', linestyle='--', label=f'MP Sell Limit ({0.5 - MARKET_PERCEPTION_THRESHOLD})')
+                # ax2.axhline(y=0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD, color='#f5b8cf', linestyle='--', label=f'MMI Sell Limit ({0.5 - MARKET_MOMENTUM_INDICATOR_THRESHOLD})')
+                ax2.axhline(y=0.5 - PRICE_CONFIDENCE_THRESHOLD, color='r', linestyle='--', label=f'PC Sell Limit ({0.5 - PRICE_CONFIDENCE_THRESHOLD})')
+                ax2.set_xlabel('Time')
+                ax2.set_ylabel('Price Confidence')
+                ax2.set_title('Market Indicators')
+                ax2.set_ylim(0, 1)  # Set y-axis limits for confidence (0 to 1)
+                ax2.legend(loc='center left', bbox_to_anchor=(0, 0.5))
+                ax2.tick_params(axis='x', rotation=45)
+            
+            if visibility['macd']:
+                ax3.clear()
+                # Plot MACD on the middle subplot
+                ax3.plot(time_labels, macd_values, label='MACD')
+                ax3.plot(time_labels, signal_values, label='Signal Line')
+                ax3.axhline(y=0, color='r', linestyle='--')
+                ax3.set_xlabel('Time')
+                ax3.set_ylabel('MACD')
+                ax3.set_title('MACD Indicator')
+                ax3.legend(loc='center left', bbox_to_anchor=(0, 0.5))
+                ax3.tick_params(axis='x', rotation=45)
+
+            if visibility['price']:
+                ax4.clear()
+                # Plot price on the bottom subplot
+                ax4.plot(time_labels, price_values, label=f'{extract_base_currency(PAIR)} Price', color='green')
+                ax4.set_xlabel('Time')
+                ax4.set_ylabel('Price (ZAR)')
+                ax4.set_title(f'{extract_base_currency(PAIR)} Price Over Time')
+                ax4.legend(loc='center left', bbox_to_anchor=(0, 0.5))
+                ax4.tick_params(axis='x', rotation=45)
+                ax4.yaxis.set_major_formatter(FuncFormatter(format_large_number))
+
+            if visibility['delta']:
+                ax5.clear()
+                ax5.plot(time_labels, macd_signal_delta_values, label='MACD-Signal Delta', color='purple')
+                ax5.axhline(y=0, color='r', linestyle='--')
+                ax5.set_xlabel('Time')
+                ax5.set_ylabel('MACD-Signal Delta')
+                ax5.set_title('MACD-Signal Delta Over Time')
+                ax5.legend(loc='center left', bbox_to_anchor=(0, 0.5))
+                ax5.tick_params(axis='x', rotation=45)
+            
+            update_layout()
+        except Exception as e:
+            logging.error(f"Error updating plot: {e}")
+
     ani = FuncAnimation(fig, update_plot, interval=API_CALL_DELAY*1000, cache_frame_data=False)
     plt.show()
