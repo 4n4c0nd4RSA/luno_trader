@@ -19,7 +19,7 @@ from config import API_CALL_DELAY,PAIR,PERIOD,SHORT_PERIOD,PRICE_CONFIDENCE_THRE
 # Constants
 API_KEY = os.getenv('LUNO_API_KEY_ID')
 API_SECRET = os.getenv('LUNO_API_KEY_SECRET')
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 # start time
 start_time = time.gmtime()
@@ -45,7 +45,9 @@ market_momentum_indicator_values = []
 price_values = []
 macd_values = []
 signal_values = []
+macd_signal_delta_values = []
 
+macd_signal = None
 since = int(time.time()*1000)-23*60*60*1000
 all_trades = []
 
@@ -312,12 +314,18 @@ def mock_trade(order_type, ticker_data, fee_info):
 
 # Function to update wallet values for plotting
 def update_wallet_values(ticker_data, confidence, short_confidence, macd, signalValue):
-    global ZAR_balance, BTC_balance, data_queue
+    global ZAR_balance, BTC_balance, data_queue, macd_signal
 
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
     total_value_zar = ZAR_balance + btc_to_zar
     current_time = time.time()
     current_price = float(ticker_data['bid'])
+    if macd_signal != None:
+        macd_signal_delta = (macd - signalValue) - macd_signal
+    else:
+        macd_signal_delta = 0
+    
+    macd_signal = macd - signalValue
     
     data_queue.put({
         'time': current_time,
@@ -328,7 +336,8 @@ def update_wallet_values(ticker_data, confidence, short_confidence, macd, signal
         'short_confidence': short_confidence,
         'price': current_price,
         'macd': macd,
-        'signal': signalValue
+        'signal': signalValue,
+        'macd_signal_delta': macd_signal_delta
     })
 
 def format_large_number(x, pos):
@@ -355,7 +364,7 @@ def plot_wallet_values():
 
 # Function to update the plot
 def update_plot(frame):
-    global time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, short_confidence_values, market_momentum_indicator_values, price_values, macd_values, signal_values, fig, ax1, ax2, ax3, ax4, data_queue
+    global time_steps, wallet_values, btc_values_in_zar, zar_values, confidence_values, short_confidence_values, market_momentum_indicator_values, price_values, macd_values, signal_values, macd_signal_delta_values, fig, ax1, ax2, ax3, ax4, ax5, data_queue
     try:
         while not data_queue.empty():
             data = data_queue.get_nowait()
@@ -369,9 +378,10 @@ def update_plot(frame):
             price_values.append(data['price'])
             macd_values.append(data['macd'])
             signal_values.append(data['signal'])
+            macd_signal_delta_values.append(data['macd_signal_delta'])
 
         # Ensure all lists are the same length
-        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(short_confidence_values), len(price_values), len(market_momentum_indicator_values), len(macd_values), len(signal_values))
+        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values), len(confidence_values), len(short_confidence_values), len(price_values), len(market_momentum_indicator_values), len(macd_values), len(signal_values), len(macd_signal_delta_values))
         time_steps = time_steps[-min_length:]
         wallet_values = wallet_values[-min_length:]
         btc_values_in_zar = btc_values_in_zar[-min_length:]
@@ -382,14 +392,14 @@ def update_plot(frame):
         price_values = price_values[-min_length:]
         macd_values = macd_values[-min_length:]
         signal_values = signal_values[-min_length:]
+        macd_signal_delta_values = macd_signal_delta_values[-min_length:]
 
         ax1.clear()
         ax2.clear()
         ax3.clear()
         ax4.clear()
+        ax5.clear()
 
-        min_length = min(len(time_steps), len(wallet_values), len(btc_values_in_zar), len(zar_values))
-        
         local_tz = tzlocal.get_localzone()
         time_labels = pd.to_datetime(time_steps[:min_length], unit='s').tz_localize('UTC').tz_convert(local_tz)
         
@@ -444,10 +454,19 @@ def update_plot(frame):
         ax4.tick_params(axis='x', rotation=45)
         ax4.yaxis.set_major_formatter(FuncFormatter(format_large_number))
 
+        ax5.plot(time_labels, macd_signal_delta_values, label='MACD-Signal Delta', color='purple')
+        ax5.axhline(y=0, color='r', linestyle='--')
+        ax5.set_xlabel('Time')
+        ax5.set_ylabel('MACD-Signal Delta')
+        ax5.set_title('MACD-Signal Delta Over Time')
+        ax5.legend(loc='center left', bbox_to_anchor=(0, 0.5))
+        ax5.tick_params(axis='x', rotation=45)
+
         ax1.autoscale_view(scalex=True, scaley=True)
         ax2.autoscale_view(scalex=True, scaley=True)
         ax3.autoscale_view(scalex=True, scaley=True)
         ax4.autoscale_view(scalex=True, scaley=True)
+        ax5.autoscale_view(scalex=True, scaley=True)
         
         plt.tight_layout()  # Adjust the layout to prevent overlap
     except Exception as e:
@@ -542,7 +561,7 @@ def trading_loop(true_trade):
 
 if __name__ == '__main__':
     # Set up the plot
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(12, 20), sharex=True)
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, 1, figsize=(12, 25), sharex=True)
 
     parser = argparse.ArgumentParser(description='Luno Trading Bot')
     parser.add_argument('--true-trade', action='store_true', help='Execute real trades')
