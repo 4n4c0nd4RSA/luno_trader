@@ -255,13 +255,15 @@ def get_current_btc_percentage(ticker_data):
     return current_btc_percentage
 
 # Function to determine the action (Buy, Sell, or Nothing) based on confidence
-def determine_action(ticker_data, macd, signalValue, market_perception, confidence):
+def determine_action(ticker_data, macd, signalValue, market_perception, confidence, macd_signal_delta):
     global ZAR_balance, BTC_balance
     # Determine action based on the target confidence and threshold
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
-    if market_perception >= (0.5 + MARKET_PERCEPTION_THRESHOLD) and confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD) and macd > (signalValue + 100) and ZAR_balance > 0.0001 * float(ticker_data['bid']):
+    should_buy = market_perception >= (0.5 + MARKET_PERCEPTION_THRESHOLD) and confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD) and macd > (signalValue + 100)
+    should_sell = macd_signal_delta < -50
+    if should_buy and ZAR_balance > 0.0001 * float(ticker_data['bid']):
         return 'Buy'
-    elif market_perception <= (0.5 - MARKET_PERCEPTION_THRESHOLD) and confidence <= (0.5 - PRICE_CONFIDENCE_THRESHOLD) and macd < (signalValue - 100) and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
+    elif not should_buy and should_sell and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
         return 'Sell'
     else:
         return 'Nothing'
@@ -349,19 +351,13 @@ def mock_trade(order_type, ticker_data, fee_info):
     logging.info(f'{extract_base_currency(PAIR)} wallet %: {current_btc_percentage}')
 
 # Function to update wallet values for plotting
-def update_wallet_values(ticker_data, confidence, short_confidence, macd, signalValue):
-    global ZAR_balance, BTC_balance, data_queue, macd_signal
+def update_wallet_values(ticker_data, confidence, short_confidence, macd, signalValue, macd_signal_delta):
+    global ZAR_balance, BTC_balance, data_queue
 
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
     total_value_zar = ZAR_balance + btc_to_zar
     current_time = time.time()
     current_price = float(ticker_data['bid'])
-    if macd_signal != None:
-        macd_signal_delta = (macd - signalValue) - macd_signal
-    else:
-        macd_signal_delta = 0
-    
-    macd_signal = macd - signalValue
     
     data_queue.put({
         'time': current_time,
@@ -432,7 +428,7 @@ def calculate_macd():
     return macd.iloc[-1], signal.iloc[-1]
 
 def trading_loop(true_trade):
-    global ZAR_balance, BTC_balance
+    global ZAR_balance, BTC_balance, macd_signal
     old_confidence = None
 
     while True:
@@ -458,8 +454,16 @@ def trading_loop(true_trade):
             old_confidence = confidence
 
             macd, signalValue = calculate_macd()
-            action = determine_action(ticker_data, macd, signalValue, confidence, short_confidence)
 
+            if macd_signal != None:
+                macd_signal_delta = (macd - signalValue) - macd_signal
+            else:
+                macd_signal_delta = 0
+
+            macd_signal = macd - signalValue
+
+            action = determine_action(ticker_data, macd, signalValue, confidence, short_confidence, macd_signal_delta)
+            
             if abs(conf_delta) > 0.01 or action in ['Buy', 'Sell']:
                 logging.info(f"---------------------------------")
                 logging.info(f"{extract_base_currency(PAIR)} Price: R {float(ticker_data['bid'])}")
@@ -478,7 +482,7 @@ def trading_loop(true_trade):
                     execute_trade(action, ticker_data, fee_info)
                 else:
                     mock_trade(action, ticker_data, fee_info)
-            update_wallet_values(ticker_data, confidence, short_confidence, macd, signalValue)
+            update_wallet_values(ticker_data, confidence, short_confidence, macd, signalValue, macd_signal_delta)
 
         except Exception as e:
             logging.error(f"Error in trading loop: {e}")
