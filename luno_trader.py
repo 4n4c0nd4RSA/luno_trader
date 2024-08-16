@@ -261,7 +261,7 @@ def determine_action(ticker_data, macd, signalValue, market_perception, confiden
     btc_to_zar = BTC_balance * float(ticker_data['bid'])
     should_buy = market_perception >= (0.5 + MARKET_PERCEPTION_THRESHOLD) and confidence >= (0.5 + PRICE_CONFIDENCE_THRESHOLD) and macd > (signalValue + 100)
     should_sell = macd_signal_delta < -50
-    if should_buy and ZAR_balance > 0.0001 * float(ticker_data['bid']):
+    if should_buy and macd_signal_delta > 50 and ZAR_balance > 0.0001 * float(ticker_data['bid']):
         return 'Buy'
     elif not should_buy and should_sell and btc_to_zar > (0.0001 * float(ticker_data['bid'])):
         return 'Sell'
