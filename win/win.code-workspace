@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"chatgpt.commentCodeLensEnabled": true
+	},
+	"extensions": {
+		"recommendations": [
+			"openai.chatgpt"
+		]
+	}
+}

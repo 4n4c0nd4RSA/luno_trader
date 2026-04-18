@@ -1,0 +1,643 @@
+2024-07-28 10:00:33,575 ---------------------------------
+2024-07-28 10:00:33,575 XBT Price: R 1255324.0
+2024-07-28 10:00:33,575 XBT wallet %: 0.0
+2024-07-28 10:00:33,576 Market Perception in XBT: 0.5289233804036079
+2024-07-28 10:00:33,576 Market Perception Delta: 0.012155442347966061
+2024-07-28 10:00:33,576 Price Confidence: 0.551020800761016
+2024-07-28 10:47:20,788 'NoneType' object is not iterable
+2024-07-28 12:33:10,613 'NoneType' object is not iterable
+2024-07-28 13:22:47,606 'NoneType' object is not iterable
+2024-07-28 14:15:59,110 Error getting ticker information: HTTPSConnectionPool(host='api.luno.com', port=443): Read timed out. (read timeout=10)
+2024-07-28 15:23:23,297 'NoneType' object is not iterable
+2024-07-28 15:24:23,520 'NoneType' object is not iterable
+2024-07-28 18:12:39,823 'NoneType' object is not iterable
+2024-07-28 18:13:40,026 'NoneType' object is not iterable
+2024-07-28 20:02:53,711 'NoneType' object is not iterable
+2024-07-28 21:09:49,442 Gracefully shutting down...
+2024-07-28 21:58:57,771 'NoneType' object is not iterable
+2024-07-28 21:59:57,979 'NoneType' object is not iterable
+2024-07-28 22:25:44,651 ---------------------------------
+2024-07-28 22:25:44,651 XBT Price: R 1267804.0
+2024-07-28 22:25:44,651 XBT wallet %: 0.0
+2024-07-28 22:25:44,651 Market Perception in XBT: 0.45748324539267426
+2024-07-28 22:25:44,651 Market Perception Delta: 0.01385807904437486
+2024-07-28 22:25:44,651 Price Confidence: 0.6312961502027632
+2024-07-28 22:45:20,652 ---------------------------------
+2024-07-28 22:45:20,652 XBT Price: R 1266019.0
+2024-07-28 22:45:20,652 XBT wallet %: 0.0
+2024-07-28 22:45:20,652 Market Perception in XBT: 0.48944147755594225
+2024-07-28 22:45:20,652 Market Perception Delta: 0.019629683639473816
+2024-07-28 22:45:20,652 Price Confidence: 0.5797263012492143
+2024-07-28 22:46:22,425 ---------------------------------
+2024-07-28 22:46:22,426 XBT Price: R 1266135.0
+2024-07-28 22:46:22,426 XBT wallet %: 0.0
+2024-07-28 22:46:22,426 Market Perception in XBT: 0.5027752145027182
+2024-07-28 22:46:22,426 Market Perception Delta: 0.013333736946775976
+2024-07-28 22:46:22,426 Price Confidence: 0.5780519471337151
+2024-07-28 22:47:24,147 ---------------------------------
+2024-07-28 22:47:24,148 XBT Price: R 1266851.0
+2024-07-28 22:47:24,148 XBT wallet %: 0.0
+2024-07-28 22:47:24,148 Market Perception in XBT: 0.4897173736263064
+2024-07-28 22:47:24,148 Market Perception Delta: -0.01305784087641182
+2024-07-28 22:47:24,148 Price Confidence: 0.5755426803207829
+2024-07-28 22:48:25,989 ---------------------------------
+2024-07-28 22:48:25,989 XBT Price: R 1266897.0
+2024-07-28 22:48:25,989 XBT wallet %: 0.0
+2024-07-28 22:48:25,989 Market Perception in XBT: 0.46446485533556536
+2024-07-28 22:48:25,989 Market Perception Delta: -0.025252518290741044
+2024-07-28 22:48:25,989 Price Confidence: 0.574540464995597
+2024-07-28 22:49:27,699 ---------------------------------
+2024-07-28 22:49:27,699 XBT Price: R 1266805.0
+2024-07-28 22:49:27,699 XBT wallet %: 0.0
+2024-07-28 22:49:27,699 Market Perception in XBT: 0.44766628246631746
+2024-07-28 22:49:27,699 Market Perception Delta: -0.016798572869247907
+2024-07-28 22:49:27,700 Price Confidence: 0.576794366163067
+2024-07-28 22:50:29,433 ---------------------------------
+2024-07-28 22:50:29,433 XBT Price: R 1266398.0
+2024-07-28 22:50:29,433 XBT wallet %: 0.0
+2024-07-28 22:50:29,433 Market Perception in XBT: 0.46340793273893954
+2024-07-28 22:50:29,433 Market Perception Delta: 0.015741650272622087
+2024-07-28 22:50:29,433 Price Confidence: 0.5768772394547066
+2024-07-28 22:51:31,657 ---------------------------------
+2024-07-28 22:51:31,657 XBT Price: R 1265991.0
+2024-07-28 22:51:31,657 XBT wallet %: 0.0
+2024-07-28 22:51:31,657 Market Perception in XBT: 0.4805293293948538
+2024-07-28 22:51:31,657 Market Perception Delta: 0.01712139665591428
+2024-07-28 22:51:31,657 Price Confidence: 0.5753867499653332
+2024-07-28 22:53:35,634 ---------------------------------
+2024-07-28 22:53:35,634 XBT Price: R 1265693.0
+2024-07-28 22:53:35,634 XBT wallet %: 0.0
+2024-07-28 22:53:35,634 Market Perception in XBT: 0.5029189796013898
+2024-07-28 22:53:35,634 Market Perception Delta: 0.0205578123589093
+2024-07-28 22:53:35,634 Price Confidence: 0.5711167285122655
+2024-07-29 09:42:10,908 'NoneType' object is not iterable
+2024-07-29 09:57:31,902 'NoneType' object is not iterable
+2024-07-29 12:36:40,909 'NoneType' object is not iterable
+2024-07-29 12:52:16,599 'NoneType' object is not iterable
+2024-07-29 15:18:20,162 'NoneType' object is not iterable
+2024-07-29 15:19:33,535 ---------------------------------
+2024-07-29 15:19:33,535 XBT Price: R 1306242.0
+2024-07-29 15:19:33,535 XBT wallet %: 0.0
+2024-07-29 15:19:33,535 Market Perception in XBT: 0.38371760603483973
+2024-07-29 15:19:33,535 Market Perception Delta: 0
+2024-07-29 15:19:33,535 Price Confidence: 0.8009645072733267
+2024-07-29 15:19:33,735 =================================
+2024-07-29 15:19:33,735 XBT Price: R 1306242.0
+2024-07-29 15:19:33,735 Bought 0.0015298999827886251 XBT at 1307275.0 ZAR/XBT
+2024-07-29 15:19:33,735 New Demo ZAR balance: 0
+2024-07-29 15:19:33,735 New Demo XBT balance: 0.001522250482874682 (1988.4275152511905)
+2024-07-29 15:19:33,735 XBT wallet %: 1.0
+2024-07-29 15:33:55,457 'NoneType' object is not iterable
+2024-07-29 16:50:19,702 ---------------------------------
+2024-07-29 16:50:19,702 XBT Price: R 1286501.0
+2024-07-29 16:50:19,702 XBT wallet %: 1.0
+2024-07-29 16:50:19,702 Market Perception in XBT: 0.3771971310467934
+2024-07-29 16:50:19,703 Market Perception Delta: -0.0020156611846758876
+2024-07-29 16:50:19,703 Price Confidence: 0.27237531737628473
+2024-07-29 16:50:19,910 =================================
+2024-07-29 16:50:19,910 XBT Price: R 1286501.0
+2024-07-29 16:50:19,910 Sold 0 XBT at 1286501.0 ZAR/XBT
+2024-07-29 16:50:19,910 New Demo ZAR balance: 1948.5848846264175
+2024-07-29 16:50:19,910 New Demo XBT balance: 0 (0.0)
+2024-07-29 16:50:19,910 XBT wallet %: 0.0
+2024-07-29 17:24:37,142 luno: unknown API error (502)
+2024-07-29 18:46:17,831 ---------------------------------
+2024-07-29 18:46:17,831 XBT Price: R 1257489.0
+2024-07-29 18:46:17,831 XBT wallet %: 0.0
+2024-07-29 18:46:17,831 Market Perception in XBT: 0.3862962906450007
+2024-07-29 18:46:17,831 Market Perception Delta: 0.013900138457675015
+2024-07-29 18:46:17,831 Price Confidence: 0.023809172764581055
+2024-07-29 19:49:44,714 ---------------------------------
+2024-07-29 19:49:44,714 XBT Price: R 1259036.0
+2024-07-29 19:49:44,714 XBT wallet %: 0.0
+2024-07-29 19:49:44,715 Market Perception in XBT: 0.4250730368780048
+2024-07-29 19:49:44,715 Market Perception Delta: 0.02253792356526607
+2024-07-29 19:49:44,715 Price Confidence: 0.0626933364945591
+2024-07-29 19:56:07,262 ---------------------------------
+2024-07-29 19:56:07,262 XBT Price: R 1257374.0
+2024-07-29 19:56:07,262 XBT wallet %: 0.0
+2024-07-29 19:56:07,262 Market Perception in XBT: 0.44509272823438883
+2024-07-29 19:56:07,262 Market Perception Delta: 0.010056467472526198
+2024-07-29 19:56:07,262 Price Confidence: 0.1161529109808499
+2024-07-29 20:07:49,034 ---------------------------------
+2024-07-29 20:07:49,034 XBT Price: R 1261168.0
+2024-07-29 20:07:49,034 XBT wallet %: 0.0
+2024-07-29 20:07:49,034 Market Perception in XBT: 0.45895154391330006
+2024-07-29 20:07:49,034 Market Perception Delta: 0.013050115613026492
+2024-07-29 20:07:49,034 Price Confidence: 0.1794311981616893
+2024-07-29 20:17:26,224 ---------------------------------
+2024-07-29 20:17:26,224 XBT Price: R 1258759.0
+2024-07-29 20:17:26,224 XBT wallet %: 0.0
+2024-07-29 20:17:26,224 Market Perception in XBT: 0.4703602164768377
+2024-07-29 20:17:26,225 Market Perception Delta: 0.012772059684245551
+2024-07-29 20:17:26,225 Price Confidence: 0.21725599145826435
+2024-07-29 20:39:54,629 ---------------------------------
+2024-07-29 20:39:54,629 XBT Price: R 1261280.0
+2024-07-29 20:39:54,629 XBT wallet %: 0.0
+2024-07-29 20:39:54,629 Market Perception in XBT: 0.4651294454873358
+2024-07-29 20:39:54,629 Market Perception Delta: -0.016456184079559066
+2024-07-29 20:39:54,630 Price Confidence: 0.14173435883698593
+2024-07-29 21:26:02,109 ---------------------------------
+2024-07-29 21:26:02,109 XBT Price: R 1263033.0
+2024-07-29 21:26:02,109 XBT wallet %: 0.0
+2024-07-29 21:26:02,110 Market Perception in XBT: 0.5027683344171388
+2024-07-29 21:26:02,110 Market Perception Delta: 0.01627985311638891
+2024-07-29 21:26:02,111 Price Confidence: 0.39795528199149754
+2024-07-29 21:31:23,556 ---------------------------------
+2024-07-29 21:31:23,557 XBT Price: R 1262594.0
+2024-07-29 21:31:23,557 XBT wallet %: 0.0
+2024-07-29 21:31:23,557 Market Perception in XBT: 0.5232125470567652
+2024-07-29 21:31:23,557 Market Perception Delta: 0.011251701529185754
+2024-07-29 21:31:23,557 Price Confidence: 0.5649458138031271
+2024-07-29 21:32:28,316 ---------------------------------
+2024-07-29 21:32:28,316 XBT Price: R 1262073.0
+2024-07-29 21:32:28,316 XBT wallet %: 0.0
+2024-07-29 21:32:28,316 Market Perception in XBT: 0.5371122212962429
+2024-07-29 21:32:28,316 Market Perception Delta: 0.013899674239477688
+2024-07-29 21:32:28,316 Price Confidence: 0.6258156526885338
+2024-07-29 22:09:09,300 ---------------------------------
+2024-07-29 22:09:09,300 XBT Price: R 1259923.0
+2024-07-29 22:09:09,300 XBT wallet %: 0.0
+2024-07-29 22:09:09,300 Market Perception in XBT: 0.5239124809926896
+2024-07-29 22:09:09,300 Market Perception Delta: -0.010734256222195926
+2024-07-29 22:09:09,300 Price Confidence: 0.4948849181180157
+2024-07-30 08:21:48,990 'NoneType' object is not iterable
+2024-07-30 09:19:51,661 'NoneType' object is not iterable
+2024-07-30 12:02:23,869 'NoneType' object is not iterable
+2024-07-30 12:19:16,793 'NoneType' object is not iterable
+2024-07-30 13:16:36,326 'NoneType' object is not iterable
+2024-07-30 13:47:29,279 'NoneType' object is not iterable
+2024-07-30 14:30:14,038 'NoneType' object is not iterable
+2024-07-30 14:43:05,409 ---------------------------------
+2024-07-30 14:43:05,409 XBT Price: R 1245451.0
+2024-07-30 14:43:05,409 XBT wallet %: 0.0
+2024-07-30 14:43:05,409 Market Perception in XBT: 0.6951553142376319
+2024-07-30 14:43:05,409 Market Perception Delta: 0.0029221816606614937
+2024-07-30 14:43:05,409 Price Confidence: 0.5623198302768498
+2024-07-30 14:43:05,612 =================================
+2024-07-30 14:43:05,613 XBT Price: R 1245451.0
+2024-07-30 14:43:05,613 Bought 0.0016058426980726675 XBT at 1245452.0 ZAR/XBT
+2024-07-30 14:43:05,613 New Demo ZAR balance: 0
+2024-07-30 14:43:05,613 New Demo XBT balance: 0.0015978134845823042 (1989.9984021865152)
+2024-07-30 14:43:05,613 XBT wallet %: 1.0
+2024-07-30 15:26:03,366 'NoneType' object is not iterable
+2024-07-30 17:05:38,761 ---------------------------------
+2024-07-30 17:05:38,761 XBT Price: R 1222629.0
+2024-07-30 17:05:38,761 XBT wallet %: 1.0
+2024-07-30 17:05:38,761 Market Perception in XBT: 0.6255367800645478
+2024-07-30 17:05:38,761 Market Perception Delta: -0.003065797075600396
+2024-07-30 17:05:38,761 Price Confidence: 0.12731098444578615
+2024-07-30 17:05:38,965 =================================
+2024-07-30 17:05:38,965 XBT Price: R 1222629.0
+2024-07-30 17:05:38,965 Sold 0 XBT at 1222629.0 ZAR/XBT
+2024-07-30 17:05:38,965 New Demo ZAR balance: 1943.7654373271712
+2024-07-30 17:05:38,965 New Demo XBT balance: 0 (0.0)
+2024-07-30 17:05:38,965 XBT wallet %: 0.0
+2024-07-30 17:53:31,290 'NoneType' object is not iterable
+2024-07-30 18:25:15,430 ---------------------------------
+2024-07-30 18:25:15,431 XBT Price: R 1235353.0
+2024-07-30 18:25:15,431 XBT wallet %: 0.0
+2024-07-30 18:25:15,431 Market Perception in XBT: 0.5839704623946964
+2024-07-30 18:25:15,431 Market Perception Delta: -0.011754627495270675
+2024-07-30 18:25:15,431 Price Confidence: 0.31919752198605456
+2024-07-30 19:02:31,679 ---------------------------------
+2024-07-30 19:02:31,679 XBT Price: R 1233325.0
+2024-07-30 19:02:31,679 XBT wallet %: 0.0
+2024-07-30 19:02:31,679 Market Perception in XBT: 0.5561603061206326
+2024-07-30 19:02:31,679 Market Perception Delta: 0.004783733800775791
+2024-07-30 19:02:31,679 Price Confidence: 0.6016062458290893
+2024-07-30 19:02:31,901 =================================
+2024-07-30 19:02:31,901 XBT Price: R 1233325.0
+2024-07-30 19:02:31,901 Bought 0.001576035401286579 XBT at 1233326.0 ZAR/XBT
+2024-07-30 19:02:31,901 New Demo ZAR balance: 0
+2024-07-30 19:02:31,901 New Demo XBT balance: 0.001568155224280146 (1934.0450419853112)
+2024-07-30 19:02:31,901 XBT wallet %: 1.0
+2024-07-30 19:03:38,030 ---------------------------------
+2024-07-30 19:03:38,030 XBT Price: R 1233281.0
+2024-07-30 19:03:38,031 XBT wallet %: 1.0
+2024-07-30 19:03:38,031 Market Perception in XBT: 0.5717504557537175
+2024-07-30 19:03:38,031 Market Perception Delta: 0.015590149633084915
+2024-07-30 19:03:38,031 Price Confidence: 0.48002288032143503
+2024-07-30 19:06:55,577 ---------------------------------
+2024-07-30 19:06:55,578 XBT Price: R 1230015.0
+2024-07-30 19:06:55,579 XBT wallet %: 1.0
+2024-07-30 19:06:55,579 Market Perception in XBT: 0.5862477687653842
+2024-07-30 19:06:55,580 Market Perception Delta: 0.01135522599343064
+2024-07-30 19:06:55,580 Price Confidence: 0.4341125902531666
+2024-07-30 19:59:49,090 ---------------------------------
+2024-07-30 19:59:49,091 XBT Price: R 1224523.0
+2024-07-30 19:59:49,091 XBT wallet %: 1.0
+2024-07-30 19:59:49,091 Market Perception in XBT: 0.6135226064164939
+2024-07-30 19:59:49,091 Market Perception Delta: 0.017173339995617765
+2024-07-30 19:59:49,091 Price Confidence: 0.5239976486873522
+2024-07-30 20:02:01,588 ---------------------------------
+2024-07-30 20:02:01,589 XBT Price: R 1225015.0
+2024-07-30 20:02:01,589 XBT wallet %: 1.0
+2024-07-30 20:02:01,589 Market Perception in XBT: 0.6229276712625006
+2024-07-30 20:02:01,589 Market Perception Delta: 0.011217555265363277
+2024-07-30 20:02:01,589 Price Confidence: 0.5835709870295485
+2024-07-30 20:09:39,735 'NoneType' object is not iterable
+2024-07-30 20:10:39,935 'NoneType' object is not iterable
+2024-07-30 20:11:45,784 ---------------------------------
+2024-07-30 20:11:45,784 XBT Price: R 1223702.0
+2024-07-30 20:11:45,784 XBT wallet %: 1.0
+2024-07-30 20:11:45,785 Market Perception in XBT: 0.6086946584256085
+2024-07-30 20:11:45,785 Market Perception Delta: -0.011761518934110482
+2024-07-30 20:11:45,785 Price Confidence: 0.39870977374269967
+2024-07-30 20:29:21,345 'NoneType' object is not iterable
+2024-07-30 20:32:40,093 ---------------------------------
+2024-07-30 20:32:40,093 XBT Price: R 1225511.0
+2024-07-30 20:32:40,093 XBT wallet %: 1.0
+2024-07-30 20:32:40,093 Market Perception in XBT: 0.5946860634830247
+2024-07-30 20:32:40,093 Market Perception Delta: -0.0005497391883879654
+2024-07-30 20:32:40,093 Price Confidence: 0.37783826264782117
+2024-07-30 20:32:40,302 =================================
+2024-07-30 20:32:40,302 XBT Price: R 1225511.0
+2024-07-30 20:32:40,303 Sold 0 XBT at 1225511.0 ZAR/XBT
+2024-07-30 20:32:40,303 New Demo ZAR balance: 1912.182519677472
+2024-07-30 20:32:40,303 New Demo XBT balance: 0 (0.0)
+2024-07-30 20:32:40,303 XBT wallet %: 0.0
+2024-07-31 17:09:19,498 ---------------------------------
+2024-07-31 17:09:19,498 XBT Price: R 1228372.0
+2024-07-31 17:09:19,498 XBT wallet %: 0.0
+2024-07-31 17:09:19,499 Market Perception in XBT: 0.537553692886223
+2024-07-31 17:09:19,499 Market Perception Delta: 0
+2024-07-31 17:09:19,499 Price Confidence: 0.6092489875789564
+2024-07-31 17:09:19,706 =================================
+2024-07-31 17:09:19,706 XBT Price: R 1228372.0
+2024-07-31 17:09:19,706 Bought 0.0016275670801772096 XBT at 1228828.0 ZAR/XBT
+2024-07-31 17:09:19,706 New Demo ZAR balance: 0
+2024-07-31 17:09:19,706 New Demo XBT balance: 0.0016194292447763235 (1989.2615402643821)
+2024-07-31 17:09:19,706 XBT wallet %: 1.0
+2024-07-31 17:54:42,715 'NoneType' object is not iterable
+2024-07-31 18:44:32,927 'NoneType' object is not iterable
+2024-07-31 19:34:42,675 'NoneType' object is not iterable
+2024-07-31 20:01:56,969 'NoneType' object is not iterable
+2024-07-31 20:35:33,052 'NoneType' object is not iterable
+2024-07-31 21:30:30,040 'NoneType' object is not iterable
+2024-07-31 21:50:43,932 ---------------------------------
+2024-07-31 21:50:43,933 XBT Price: R 1214111.0
+2024-07-31 21:50:43,933 XBT wallet %: 1.0
+2024-07-31 21:50:43,933 Market Perception in XBT: 0.4933346118391483
+2024-07-31 21:50:43,933 Market Perception Delta: -0.0008123022371427924
+2024-07-31 21:50:43,933 Price Confidence: 0.21684191740367298
+2024-07-31 21:50:44,143 =================================
+2024-07-31 21:50:44,144 XBT Price: R 1214111.0
+2024-07-31 21:50:44,144 Sold 0 XBT at 1214111.0 ZAR/XBT
+2024-07-31 21:50:44,144 New Demo ZAR balance: 1956.3360255056039
+2024-07-31 21:50:44,144 New Demo XBT balance: 0 (0.0)
+2024-07-31 21:50:44,144 XBT wallet %: 0.0
+2024-07-31 23:41:34,502 ---------------------------------
+2024-07-31 23:41:34,502 XBT Price: R 1200987.0
+2024-07-31 23:41:34,502 XBT wallet %: 0.0
+2024-07-31 23:41:34,502 Market Perception in XBT: 0.49670293685575506
+2024-07-31 23:41:34,502 Market Perception Delta: -0.012128897587992404
+2024-07-31 23:41:34,502 Price Confidence: 0.0543682407266145
+2024-08-01 11:54:10,989 ---------------------------------
+2024-08-01 11:54:10,990 XBT Price: R 1195723.0
+2024-08-01 11:54:10,990 XBT wallet %: 0.0
+2024-08-01 11:54:10,990 Market Perception in XBT: 0.6017014097659779
+2024-08-01 11:54:10,990 Market Perception Delta: 0
+2024-08-01 11:54:10,990 Price Confidence: 0.5881109765405907
+2024-08-01 11:54:11,194 =================================
+2024-08-01 11:54:11,194 XBT Price: R 1195723.0
+2024-08-01 11:54:11,195 Bought 0.0016726267934740794 XBT at 1195724.0 ZAR/XBT
+2024-08-01 11:54:11,195 New Demo ZAR balance: 0
+2024-08-01 11:54:11,195 New Demo XBT balance: 0.001664263659506709 (1989.9983357363406)
+2024-08-01 11:54:11,195 XBT wallet %: 1.0
+2024-08-01 12:25:12,167 'NoneType' object is not iterable
+2024-08-01 12:49:03,551 'NoneType' object is not iterable
+2024-08-01 13:10:54,743 'NoneType' object is not iterable
+2024-08-01 17:02:53,637 'NoneType' object is not iterable
+2024-08-01 17:16:42,099 'NoneType' object is not iterable
+2024-08-01 19:02:56,825 'NoneType' object is not iterable
+2024-08-01 19:03:02,019 'NoneType' object is not iterable
+2024-08-01 19:03:07,217 'NoneType' object is not iterable
+2024-08-01 19:03:12,421 'NoneType' object is not iterable
+2024-08-01 19:03:17,615 'NoneType' object is not iterable
+2024-08-01 21:39:37,853 'NoneType' object is not iterable
+2024-08-01 22:50:11,009 ---------------------------------
+2024-08-01 22:50:11,009 XBT Price: R 1200028.0
+2024-08-01 22:50:11,009 XBT wallet %: 0.0
+2024-08-01 22:50:11,009 Market Perception in XBT: 0.5506821667392074
+2024-08-01 22:50:11,009 Market Perception Delta: 0.0005551846095845914
+2024-08-01 22:50:11,009 Price Confidence: 0.6443381275675294
+2024-08-01 22:50:11,214 =================================
+2024-08-01 22:50:11,214 XBT Price: R 1200028.0
+2024-08-01 22:50:11,214 Bought 0.0016659738991869214 XBT at 1200499.0 ZAR/XBT
+2024-08-01 22:50:11,214 New Demo ZAR balance: 0
+2024-08-01 22:50:11,214 New Demo XBT balance: 0.0016576440296909869 (1989.2192496620155)
+2024-08-01 22:50:11,214 XBT wallet %: 1.0
+2024-08-05 23:29:00,412 'NoneType' object is not iterable
+2024-08-05 23:29:10,734 ---------------------------------
+2024-08-05 23:29:10,735 XBT Price: R 1040116.0
+2024-08-05 23:29:10,736 XBT wallet %: 0.0
+2024-08-05 23:29:10,738 Market Perception in XBT: 0.7217418234550907
+2024-08-05 23:29:10,739 Market Perception Delta: 0
+2024-08-05 23:29:10,740 Price Confidence: 0.8760687993563147
+2024-08-05 23:29:10,949 =================================
+2024-08-05 23:29:10,949 XBT Price: R 1040116.0
+2024-08-05 23:29:10,949 Bought 0.0019224706054244431 XBT at 1040328.0 ZAR/XBT
+2024-08-05 23:29:10,949 New Demo ZAR balance: 0
+2024-08-05 23:29:10,949 New Demo XBT balance: 0.0019128582523973208 (1989.5944740504917)
+2024-08-05 23:29:10,949 XBT wallet %: 1.0
+2024-08-06 07:56:04,984 'NoneType' object is not iterable
+2024-08-06 08:17:15,512 'NoneType' object is not iterable
+2024-08-06 08:35:05,393 'NoneType' object is not iterable
+2024-08-06 08:42:45,359 'NoneType' object is not iterable
+2024-08-06 08:42:50,554 'NoneType' object is not iterable
+2024-08-06 08:42:55,752 'NoneType' object is not iterable
+2024-08-06 08:51:58,861 'NoneType' object is not iterable
+2024-08-06 08:52:04,074 'NoneType' object is not iterable
+2024-08-06 09:07:15,954 'NoneType' object is not iterable
+2024-08-06 09:07:21,156 'NoneType' object is not iterable
+2024-08-06 09:07:26,369 'NoneType' object is not iterable
+2024-08-06 09:07:31,605 'NoneType' object is not iterable
+2024-08-06 09:07:36,842 'NoneType' object is not iterable
+2024-08-06 09:29:05,299 'NoneType' object is not iterable
+2024-08-06 09:29:10,508 'NoneType' object is not iterable
+2024-08-06 09:54:06,986 'NoneType' object is not iterable
+2024-08-06 09:54:12,189 'NoneType' object is not iterable
+2024-08-06 09:54:17,390 'NoneType' object is not iterable
+2024-08-06 10:10:21,865 'NoneType' object is not iterable
+2024-08-06 10:10:27,084 'NoneType' object is not iterable
+2024-08-06 10:49:32,982 'NoneType' object is not iterable
+2024-08-06 10:49:38,185 'NoneType' object is not iterable
+2024-08-06 10:49:43,413 'NoneType' object is not iterable
+2024-08-06 10:49:48,660 'NoneType' object is not iterable
+2024-08-06 10:49:53,873 'NoneType' object is not iterable
+2024-08-06 10:49:59,084 'NoneType' object is not iterable
+2024-08-06 10:50:04,396 'NoneType' object is not iterable
+2024-08-06 10:59:45,399 'NoneType' object is not iterable
+2024-08-06 10:59:50,620 'NoneType' object is not iterable
+2024-08-06 11:06:04,087 'NoneType' object is not iterable
+2024-08-06 11:11:19,429 'NoneType' object is not iterable
+2024-08-06 11:11:24,636 'NoneType' object is not iterable
+2024-08-06 11:17:29,218 'NoneType' object is not iterable
+2024-08-06 11:26:30,962 'NoneType' object is not iterable
+2024-08-06 11:26:36,193 'NoneType' object is not iterable
+2024-08-06 11:26:41,406 'NoneType' object is not iterable
+2024-08-06 12:20:00,972 'NoneType' object is not iterable
+2024-08-06 13:04:51,733 'NoneType' object is not iterable
+2024-08-06 13:04:56,966 'NoneType' object is not iterable
+2024-08-06 13:25:28,530 'NoneType' object is not iterable
+2024-08-06 13:35:03,397 ---------------------------------
+2024-08-06 13:35:03,397 XBT Price: R 1041651.0
+2024-08-06 13:35:03,398 XBT wallet %: 0.0
+2024-08-06 13:35:03,398 Market Perception in XBT: 0.2634939512379355
+2024-08-06 13:35:03,398 Market Perception Delta: 0.017979777246655337
+2024-08-06 13:35:03,398 Price Confidence: 0.4544547727107351
+2024-08-06 13:59:47,172 'NoneType' object is not iterable
+2024-08-06 13:59:52,388 'NoneType' object is not iterable
+2024-08-06 14:26:37,302 'NoneType' object is not iterable
+2024-08-06 14:26:42,510 'NoneType' object is not iterable
+2024-08-06 14:26:47,741 'NoneType' object is not iterable
+2024-08-06 14:26:52,945 'NoneType' object is not iterable
+2024-08-06 15:16:46,517 'NoneType' object is not iterable
+2024-08-06 15:16:51,724 'NoneType' object is not iterable
+2024-08-06 15:26:15,660 'NoneType' object is not iterable
+2024-08-06 16:03:04,829 'NoneType' object is not iterable
+2024-08-06 16:03:10,042 'NoneType' object is not iterable
+2024-08-06 16:11:47,253 'NoneType' object is not iterable
+2024-08-06 16:11:52,473 'NoneType' object is not iterable
+2024-08-06 16:11:57,666 'NoneType' object is not iterable
+2024-08-06 16:43:37,855 ---------------------------------
+2024-08-06 16:43:37,855 XBT Price: R 1060387.0
+2024-08-06 16:43:37,855 XBT wallet %: 0.0
+2024-08-06 16:43:37,856 Market Perception in XBT: 0.4586344341347437
+2024-08-06 16:43:37,858 Market Perception Delta: 0.01059361373580825
+2024-08-06 16:43:37,861 Price Confidence: 0.8527423036717047
+2024-08-06 17:06:06,748 'NoneType' object is not iterable
+2024-08-06 17:06:11,958 'NoneType' object is not iterable
+2024-08-06 17:06:17,158 'NoneType' object is not iterable
+2024-08-06 17:06:22,351 'NoneType' object is not iterable
+2024-08-06 17:06:27,557 'NoneType' object is not iterable
+2024-08-06 17:06:32,751 'NoneType' object is not iterable
+2024-08-06 17:18:31,227 'NoneType' object is not iterable
+2024-08-06 17:32:04,632 'NoneType' object is not iterable
+2024-08-06 17:32:09,882 'NoneType' object is not iterable
+2024-08-06 17:32:15,088 'NoneType' object is not iterable
+2024-08-06 18:26:39,925 ---------------------------------
+2024-08-06 18:26:39,925 XBT Price: R 1061815.0
+2024-08-06 18:26:39,925 XBT wallet %: 0.0
+2024-08-06 18:26:39,926 Market Perception in XBT: 0.5317355612790136
+2024-08-06 18:26:39,926 Market Perception Delta: -0.013555698883722211
+2024-08-06 18:26:39,926 Price Confidence: 0.9234043651514391
+2024-08-06 18:27:50,432 ---------------------------------
+2024-08-06 18:27:50,445 XBT Price: R 1061180.0
+2024-08-06 18:27:50,453 XBT wallet %: 0.0
+2024-08-06 18:27:50,454 Market Perception in XBT: 0.5099437184035847
+2024-08-06 18:27:50,459 Market Perception Delta: -0.013246837952840762
+2024-08-06 18:27:50,462 Price Confidence: 0.9109915045768829
+2024-08-06 18:41:38,294 ---------------------------------
+2024-08-06 18:41:38,295 XBT Price: R 1064732.0
+2024-08-06 18:41:38,295 XBT wallet %: 0.0
+2024-08-06 18:41:38,295 Market Perception in XBT: 0.4799334803192925
+2024-08-06 18:41:38,296 Market Perception Delta: 0.010526656423084146
+2024-08-06 18:41:38,298 Price Confidence: 0.9298070371249201
+2024-08-06 18:46:00,089 ---------------------------------
+2024-08-06 18:46:00,089 XBT Price: R 1064572.0
+2024-08-06 18:46:00,090 XBT wallet %: 0.0
+2024-08-06 18:46:00,090 Market Perception in XBT: 0.5049043966188593
+2024-08-06 18:46:00,090 Market Perception Delta: 0.011674147071669583
+2024-08-06 18:46:00,090 Price Confidence: 0.967786787658738
+2024-08-06 19:19:27,935 ---------------------------------
+2024-08-06 19:19:27,935 XBT Price: R 1067272.0
+2024-08-06 19:19:27,936 XBT wallet %: 0.0
+2024-08-06 19:19:27,937 Market Perception in XBT: 0.4212224845668834
+2024-08-06 19:19:27,937 Market Perception Delta: -0.013928698194258349
+2024-08-06 19:19:27,938 Price Confidence: 0.6177902021053107
+2024-08-06 20:05:02,629 'NoneType' object is not iterable
+2024-08-06 20:05:07,849 'NoneType' object is not iterable
+2024-08-06 21:27:06,749 'NoneType' object is not iterable
+2024-08-06 21:27:11,991 'NoneType' object is not iterable
+2024-08-06 21:27:17,211 'NoneType' object is not iterable
+2024-08-06 21:27:22,401 'NoneType' object is not iterable
+2024-08-06 21:27:27,607 'NoneType' object is not iterable
+2024-08-06 21:27:32,813 'NoneType' object is not iterable
+2024-08-13 21:54:53,590 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-13 21:55:55,273 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-13 22:40:51,299 Error updating plot: local variable 'time_labels' referenced before assignment
+2024-08-13 23:02:46,302 Gracefully shutting down...
+2024-08-14 09:47:31,863 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:48:21,384 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:48:28,003 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:48:34,627 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:48:41,569 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:48:48,174 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:48:54,818 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:49:01,559 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:49:08,207 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:49:14,900 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:49:54,527 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:50:01,156 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:50:07,783 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:50:14,440 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:50:21,224 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:50:27,938 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:50:34,609 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:50:41,244 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:50:47,933 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:50:54,596 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:51:01,299 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:51:08,144 Error in trading loop: local variable 'macd_signal' referenced before assignment
+2024-08-14 09:51:13,342 Gracefully shutting down...
+2024-08-14 09:54:18,068 'NoneType' object is not iterable
+2024-08-14 09:54:23,272 'NoneType' object is not iterable
+2024-08-14 09:54:28,482 'NoneType' object is not iterable
+2024-08-14 09:54:33,682 'NoneType' object is not iterable
+2024-08-14 10:19:12,719 'NoneType' object is not iterable
+2024-08-14 10:19:17,921 'NoneType' object is not iterable
+2024-08-14 10:19:23,129 'NoneType' object is not iterable
+2024-08-14 10:19:28,338 'NoneType' object is not iterable
+2024-08-14 10:19:33,547 'NoneType' object is not iterable
+2024-08-14 10:43:00,869 'NoneType' object is not iterable
+2024-08-14 10:43:06,071 'NoneType' object is not iterable
+2024-08-14 10:43:11,272 'NoneType' object is not iterable
+2024-08-14 10:43:16,478 'NoneType' object is not iterable
+2024-08-14 10:43:21,705 'NoneType' object is not iterable
+2024-08-14 10:43:26,936 'NoneType' object is not iterable
+2024-08-14 10:43:32,139 'NoneType' object is not iterable
+2024-08-14 10:43:37,349 'NoneType' object is not iterable
+2024-08-14 10:43:42,551 'NoneType' object is not iterable
+2024-08-14 11:42:06,910 'NoneType' object is not iterable
+2024-08-14 11:42:12,115 'NoneType' object is not iterable
+2024-08-14 11:42:17,327 'NoneType' object is not iterable
+2024-08-14 12:03:00,020 'NoneType' object is not iterable
+2024-08-14 12:03:05,228 'NoneType' object is not iterable
+2024-08-14 12:03:10,422 'NoneType' object is not iterable
+2024-08-14 12:03:15,631 'NoneType' object is not iterable
+2024-08-14 12:03:20,837 'NoneType' object is not iterable
+2024-08-14 12:03:26,039 'NoneType' object is not iterable
+2024-08-14 12:03:31,241 'NoneType' object is not iterable
+2024-08-14 12:03:36,438 'NoneType' object is not iterable
+2024-08-14 12:03:41,635 'NoneType' object is not iterable
+2024-08-14 12:47:54,002 'NoneType' object is not iterable
+2024-08-14 12:47:59,197 'NoneType' object is not iterable
+2024-08-14 12:48:04,411 'NoneType' object is not iterable
+2024-08-14 12:48:09,618 'NoneType' object is not iterable
+2024-08-14 13:11:17,976 'NoneType' object is not iterable
+2024-08-14 13:11:23,186 'NoneType' object is not iterable
+2024-08-14 13:11:28,392 'NoneType' object is not iterable
+2024-08-14 13:11:33,592 'NoneType' object is not iterable
+2024-08-14 13:39:55,815 'NoneType' object is not iterable
+2024-08-14 13:40:01,024 'NoneType' object is not iterable
+2024-08-14 13:40:06,233 'NoneType' object is not iterable
+2024-08-14 14:30:41,383 Error getting candle data: luno: unknown API error (502)
+2024-08-14 14:30:41,384 Error in trading loop: 'close'
+2024-08-14 14:30:46,434 Error getting ticker information: luno: unknown API error (502)
+2024-08-14 15:19:41,607 'NoneType' object is not iterable
+2024-08-14 15:19:46,807 'NoneType' object is not iterable
+2024-08-14 15:19:52,521 'NoneType' object is not iterable
+2024-08-14 15:19:57,719 'NoneType' object is not iterable
+2024-08-14 15:20:02,924 'NoneType' object is not iterable
+2024-08-14 15:20:08,136 'NoneType' object is not iterable
+2024-08-14 15:20:13,337 'NoneType' object is not iterable
+2024-08-14 15:20:18,535 'NoneType' object is not iterable
+2024-08-14 15:20:23,744 'NoneType' object is not iterable
+2024-08-14 15:20:28,943 'NoneType' object is not iterable
+2024-08-14 15:20:34,149 'NoneType' object is not iterable
+2024-08-14 15:20:39,358 'NoneType' object is not iterable
+2024-08-14 15:20:44,559 'NoneType' object is not iterable
+2024-08-14 15:20:49,770 'NoneType' object is not iterable
+2024-08-14 15:20:54,976 'NoneType' object is not iterable
+2024-08-14 15:21:00,175 'NoneType' object is not iterable
+2024-08-14 15:21:05,385 'NoneType' object is not iterable
+2024-08-14 15:21:10,591 'NoneType' object is not iterable
+2024-08-14 15:37:33,344 'NoneType' object is not iterable
+2024-08-14 15:37:38,541 'NoneType' object is not iterable
+2024-08-14 15:50:01,846 'NoneType' object is not iterable
+2024-08-14 15:50:07,044 'NoneType' object is not iterable
+2024-08-14 16:11:35,491 'NoneType' object is not iterable
+2024-08-14 16:30:20,263 'NoneType' object is not iterable
+2024-08-14 16:30:25,467 'NoneType' object is not iterable
+2024-08-14 16:30:30,679 'NoneType' object is not iterable
+2024-08-14 16:30:35,881 'NoneType' object is not iterable
+2024-08-14 16:30:41,246 'NoneType' object is not iterable
+2024-08-14 16:30:46,454 'NoneType' object is not iterable
+2024-08-14 16:30:51,678 'NoneType' object is not iterable
+2024-08-14 16:30:56,892 'NoneType' object is not iterable
+2024-08-14 16:31:02,090 'NoneType' object is not iterable
+2024-08-14 16:42:19,008 Error getting candle data: HTTPSConnectionPool(host='api.luno.com', port=443): Read timed out. (read timeout=10)
+2024-08-14 16:42:19,009 Error in trading loop: 'close'
+2024-08-14 16:42:45,132 Error getting ticker information: HTTPSConnectionPool(host='api.luno.com', port=443): Max retries exceeded with url: /api/1/ticker?pair=XBTZAR (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x000001EDEC553A60>, 'Connection to api.luno.com timed out. (connect timeout=10)'))
+2024-08-14 16:42:47,183 'NoneType' object is not iterable
+2024-08-14 17:31:19,043 ---------------------------------
+2024-08-14 17:31:19,044 XBT Price: R 1087172.0
+2024-08-14 17:31:19,045 XBT wallet %: 0.0
+2024-08-14 17:31:19,045 Market Perception in XBT: 0.41384232938226995
+2024-08-14 17:31:19,045 Market Perception Delta: 0.013604002809658677
+2024-08-14 17:31:19,045 Price Confidence: 0.027265235994347825
+2024-08-14 17:46:22,759 'NoneType' object is not iterable
+2024-08-14 17:46:27,954 'NoneType' object is not iterable
+2024-08-14 17:46:33,160 'NoneType' object is not iterable
+2024-08-14 17:53:12,290 ---------------------------------
+2024-08-14 17:53:12,290 XBT Price: R 1100808.0
+2024-08-14 17:53:12,291 XBT wallet %: 0.0
+2024-08-14 17:53:12,291 Market Perception in XBT: 0.4485375826725989
+2024-08-14 17:53:12,291 Market Perception Delta: 0.010055882267268723
+2024-08-14 17:53:12,291 Price Confidence: 0.08803329024945161
+2024-08-14 18:40:17,062 'NoneType' object is not iterable
+2024-08-14 18:40:22,272 'NoneType' object is not iterable
+2024-08-14 18:40:27,480 'NoneType' object is not iterable
+2024-08-14 18:40:32,678 'NoneType' object is not iterable
+2024-08-14 18:40:37,903 'NoneType' object is not iterable
+2024-08-14 18:40:43,101 'NoneType' object is not iterable
+2024-08-14 18:40:48,314 'NoneType' object is not iterable
+2024-08-14 18:40:53,539 'NoneType' object is not iterable
+2024-08-14 18:40:58,830 'NoneType' object is not iterable
+2024-08-14 18:41:04,061 'NoneType' object is not iterable
+2024-08-14 18:41:09,288 'NoneType' object is not iterable
+2024-08-14 18:41:14,504 'NoneType' object is not iterable
+2024-08-14 18:50:51,259 ---------------------------------
+2024-08-14 18:50:51,267 XBT Price: R 1089745.0
+2024-08-14 18:50:51,271 XBT wallet %: 0.0
+2024-08-14 18:50:51,278 Market Perception in XBT: 0.5793116599885715
+2024-08-14 18:50:51,279 Market Perception Delta: 0.011752279526469511
+2024-08-14 18:50:51,300 Price Confidence: 0.1748017725649207
+2024-08-14 19:12:29,869 ---------------------------------
+2024-08-14 19:12:29,869 XBT Price: R 1092219.0
+2024-08-14 19:12:29,869 XBT wallet %: 0.0
+2024-08-14 19:12:29,876 Market Perception in XBT: 0.6510672226763765
+2024-08-14 19:12:29,882 Market Perception Delta: 0.01647267384255624
+2024-08-14 19:12:29,892 Price Confidence: 0.6366201362690538
+2024-08-14 20:16:50,025 'NoneType' object is not iterable
+2024-08-14 20:16:55,226 'NoneType' object is not iterable
+2024-08-14 20:17:00,431 'NoneType' object is not iterable
+2024-08-14 20:17:05,662 'NoneType' object is not iterable
+2024-08-14 20:17:10,931 'NoneType' object is not iterable
+2024-08-14 20:17:16,135 'NoneType' object is not iterable
+2024-08-14 20:17:21,340 'NoneType' object is not iterable
+2024-08-14 20:17:26,545 'NoneType' object is not iterable
+2024-08-14 20:17:31,775 'NoneType' object is not iterable
+2024-08-14 20:39:20,645 ---------------------------------
+2024-08-14 20:39:20,645 XBT Price: R 1088986.0
+2024-08-14 20:39:20,645 XBT wallet %: 0.0
+2024-08-14 20:39:20,645 Market Perception in XBT: 0.6028585423707533
+2024-08-14 20:39:20,645 Market Perception Delta: -0.013516310542349586
+2024-08-14 20:39:20,646 Price Confidence: 0.48169342732596276
+2024-08-14 21:21:07,120 'NoneType' object is not iterable
+2024-08-14 21:49:26,635 'NoneType' object is not iterable
+2024-08-14 21:49:31,830 'NoneType' object is not iterable
+2024-08-14 21:49:37,026 'NoneType' object is not iterable
+2024-08-14 21:49:42,222 'NoneType' object is not iterable
+2024-08-14 21:49:47,425 'NoneType' object is not iterable
+2024-08-14 21:49:52,624 'NoneType' object is not iterable
+2024-08-14 21:49:57,834 'NoneType' object is not iterable
+2024-08-14 21:50:03,042 'NoneType' object is not iterable
+2024-08-14 21:50:08,269 'NoneType' object is not iterable
+2024-08-14 21:50:13,482 'NoneType' object is not iterable
+2024-08-16 13:23:39,538 ---------------------------------
+2024-08-16 13:23:39,538 XBT Price: R 1071265.0
+2024-08-16 13:23:39,539 XBT wallet %: 0.0
+2024-08-16 13:23:39,539 Market Perception in XBT: 0.5329877022000746
+2024-08-16 13:23:39,539 Market Perception Delta: 0.0020362830253028985
+2024-08-16 13:23:39,539 Price Confidence: 0.5317435865034985
+2024-08-16 13:23:39,758 =================================
+2024-08-16 13:23:39,758 XBT Price: R 1071265.0
+2024-08-16 13:23:39,758 Bought 0.0018649966243561098 XBT at 1072388.0 ZAR/XBT
+2024-08-16 13:23:39,758 New Demo ZAR balance: 0
+2024-08-16 13:23:39,758 New Demo XBT balance: 0.0018556716412343292 (1987.9160807468936)
+2024-08-16 13:23:39,758 XBT wallet %: 1.0
+2026-03-01 21:58:53,135 Error getting candle data: ('ErrAPIKeyNotFound', 'API key not found')
+2026-03-01 21:58:53,136 Error in trading loop: 'close'

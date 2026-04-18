@@ -1,0 +1,163 @@
+{
+  "mock_trade": true,
+  "audit_history_file": "trade_audit_history.json",
+  "api_key_id": "ch47hp75t6bn4",
+  "api_key_secret": "whjLd4hn5885TXIAwUkiGKh0XwhPoGdIfMytv6kPfLI",
+  "history_hours": 1000,
+  "candle_seconds": 3600,
+  "trend_window_hours": 48,
+  "backtest_start_zar": 10000.0,
+  "trade_buy_fee_rate": 0.005,
+  "trade_sell_fee_rate": 0.003,
+  "current_entry_price": 0.0,
+  "raw_score_buy_bias": 10.0,
+  "raw_score_sell_bias": -40.0,
+  "sell_red_body_min_diff": 10000.0,
+  "entry_min_adx": 20.0,
+  "entry_min_hist": 0.0,
+  "early_fail_max_profit_pct": 1.5,
+  "min_bearish_exit_profit_pct": 1.0,
+  "stop_loss_pct": -4.5,
+  "min_trail_profit_pct": 1.0,
+  "trail_giveback_ratio": 0.6,
+  "max_buy_channel_pos": 0.4,
+  "pair": "XBTZAR",
+  "rules": [
+    {
+      "name": "strong_bullish_entry",
+      "active": true,
+      "action": "BUY",
+      "salience": 1,
+      "reason": "strong_bullish_entry",
+      "checks": [
+        {
+          "left_type": "signal",
+          "left_signal": "MACD",
+          "operator": ">",
+          "right_type": "number",
+          "right_value": 10.0
+        },
+        {
+          "left_type": "signal",
+          "left_signal": "MACD",
+          "operator": ">",
+          "right_type": "signal",
+          "right_value": "MACD_SIGNAL"
+        },
+        {
+          "left_type": "signal",
+          "left_signal": "CHANNEL_POS",
+          "operator": "<",
+          "right_type": "config",
+          "right_value": "max_buy_channel_pos"
+        }
+      ]
+    },
+    {
+      "name": "bearish_reversal",
+      "active": true,
+      "action": "HOLD",
+      "salience": 2,
+      "checks": [
+        {
+          "left_type": "signal",
+          "left_signal": "MACD_CROSS_DOWN",
+          "operator": "==",
+          "right_type": "boolean",
+          "right_value": true
+        },
+        {
+          "left_type": "signal",
+          "left_signal": "RED_CANDLE",
+          "operator": "==",
+          "right_type": "boolean",
+          "right_value": true
+        }
+      ]
+    },
+    {
+      "name": "bearish_reversal2",
+      "active": true,
+      "action": "HOLD",
+      "salience": 2,
+      "checks": [
+        {
+          "left_type": "signal",
+          "left_signal": "MACD_CROSS_DOWN",
+          "operator": "==",
+          "right_type": "boolean",
+          "right_value": true
+        },
+        {
+          "left_type": "signal",
+          "left_signal": "MACD_HIST_WEAKENING",
+          "operator": "==",
+          "right_type": "boolean",
+          "right_value": true
+        }
+      ]
+    },
+    {
+      "name": "stop_loss_exit",
+      "active": true,
+      "action": "SELL",
+      "salience": 3,
+      "reason": "stop_loss",
+      "checks": [
+        {
+          "left_type": "signal",
+          "left_signal": "LIVE_PROFIT_PCT",
+          "operator": "<=",
+          "right_type": "config",
+          "right_value": "stop_loss_pct"
+        }
+      ]
+    },
+    {
+      "name": "bearish_profit_exit",
+      "active": true,
+      "action": "SELL",
+      "salience": 4,
+      "reason": "bearish_exit_in_profit",
+      "checks": [
+        {
+          "left_type": "rule",
+          "left_rule": "bearish_reversal",
+          "operator": "==",
+          "right_type": "boolean",
+          "right_value": true
+        },
+        {
+          "left_type": "signal",
+          "left_signal": "LIVE_PROFIT_PCT",
+          "operator": ">=",
+          "right_type": "config",
+          "right_value": "min_bearish_exit_profit_pct"
+        }
+      ]
+    },
+    {
+      "name": "bearish_profit_exit2",
+      "active": true,
+      "action": "SELL",
+      "salience": 4,
+      "reason": "bearish_exit_in_profit",
+      "checks": [
+        {
+          "left_type": "rule",
+          "left_rule": "bearish_reversal2",
+          "operator": "==",
+          "right_type": "boolean",
+          "right_value": true
+        },
+        {
+          "left_type": "signal",
+          "left_signal": "LIVE_PROFIT_PCT",
+          "operator": ">=",
+          "right_type": "config",
+          "right_value": "min_bearish_exit_profit_pct"
+        }
+      ]
+    }
+  ]
+}
