@@ -597,19 +597,39 @@ def _evaluate_rule_checks(
     rule_results: Dict[str, bool],
     cfg: Dict[str, Any],
 ) -> bool:
-    checks = rule.get("checks", []) or []
+    return _evaluate_rule_block(rule, signal_values, rule_results, cfg)
+
+
+def _evaluate_rule_block(
+    block: Dict[str, Any],
+    signal_values: Dict[str, Any],
+    rule_results: Dict[str, bool],
+    cfg: Dict[str, Any],
+) -> bool:
+    checks = block.get("checks", []) or []
     if not checks:
         return False
 
+    mode = str(block.get("match", "all")).lower()
+    results: List[bool] = []
+
     for check in checks:
+        if not isinstance(check, dict):
+            results.append(False)
+            continue
+
+        if "checks" in check:
+            results.append(_evaluate_rule_block(check, signal_values, rule_results, cfg))
+            continue
+
         left = _resolve_left_value(check, signal_values, rule_results)
         right = _resolve_right_value(check, signal_values, cfg)
         op = str(check.get("operator", "=="))
+        results.append(_compare(left, op, right))
 
-        if not _compare(left, op, right):
-            return False
-
-    return True
+    if mode == "any":
+        return any(results)
+    return all(results)
 
 
 def _get_active_rules(cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
