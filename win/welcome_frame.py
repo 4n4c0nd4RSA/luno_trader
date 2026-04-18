@@ -6,8 +6,8 @@ class WelcomeFrame(BasePage):
     def __init__(self, parent, app):
         super().__init__(parent, app)
         self.build_header(
-            "StartUp / Welcome Help",
-            "Guide the user through API setup, config, rules, and backtesting."
+            "Welcome",
+            "Set up your trader, test your strategy safely, and monitor everything in one place."
         )
 
         outer = tk.Frame(self, bg="#f4f6f8")
@@ -29,23 +29,29 @@ class WelcomeFrame(BasePage):
         text.pack(fill="both", expand=True)
 
         guide = """
-Welcome to the Luno Trader.
+Welcome to Luno Trader.
 
-Screens:
-1. Welcome
-2. Config
-3. Backtest Results
-4. Dashboard
+This app helps you configure your trading setup, test your rules on historical market data, and monitor trader activity from a single workspace.
 
-What is supported:
-- JSON-backed config
-- flat rules with multiple checks ANDed together
-- signal-to-signal, signal-to-number, signal-to-config, and rule-to-boolean checks
-- real indicator pipeline
-- current signal computation
-- mock backtest from real Luno candle data
-- price graph with buy/sell markers
-- bank graph
+A simple way to get started:
+
+1. Open Config
+   Add your API keys, choose your market pair, and review the strategy settings.
+
+2. Review your rules
+   Create or adjust BUY and SELL rules using signals, numbers, config values, and rule-based checks.
+
+3. Run a backtest
+   Test your setup against recent Luno candle data before using it in live trading.
+
+4. Open the Dashboard
+   Start or stop the trader, review audit history, and track signals, prices, and bank value.
+
+Helpful notes:
+- Mock Trade is the safest way to test behavior before placing real trades.
+- Live trading requires a valid license/certificate.
+- Backtest Results help you understand how your rules would have behaved.
+- The Dashboard gives you a quick operational view once you are ready to run.
         """.strip()
 
         text.insert("1.0", guide)

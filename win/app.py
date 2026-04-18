@@ -1,8 +1,10 @@
 import json
 import tkinter as tk
+import webbrowser
 from tkinter import messagebox
 
 from config_defaults import APP_TITLE, CONFIG_FILE, ensure_config_shape
+from license_util import check_license_file
 from welcome_frame import WelcomeFrame
 from config_frame import ConfigFrame
 from backtest_frame import BacktestFrame
@@ -33,6 +35,7 @@ class LunoTraderUI(tk.Tk):
         self._build_frames()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self.show_frame("welcome")
+        self.after(200, self._auto_start_trader_if_enabled)
 
     def load_config(self):
         try:
@@ -52,6 +55,34 @@ class LunoTraderUI(tk.Tk):
             if not bool(self.config_data.get("mock_trade", True)):
                 self.config_data["mock_trade"] = True
             raise
+
+    def _has_valid_certificate(self):
+        return check_license_file(
+            license_file_path="license.key",
+            public_key_path="public_key.pem",
+        )
+
+    def _auto_start_trader_if_enabled(self):
+        self.config_data = self.load_config()
+        if not bool(self.config_data.get("auto_start_trader", False)):
+            return
+
+        valid, _, message = self._has_valid_certificate()
+        if not valid:
+            self.config_data["auto_start_trader"] = False
+            self.save_config()
+            self.frames["config"].refresh()
+            messagebox.showwarning(
+                "Auto-Start Disabled",
+                "Auto-Start Trader was turned off because a valid certificate/license was not found.\n\n"
+                f"{message}"
+            )
+            return
+
+        try:
+            self.start_trader()
+        except Exception as exc:
+            messagebox.showerror("Auto-Start Trader Error", str(exc))
 
     def _build_layout(self):
         self.sidebar = tk.Frame(self, bg="#1f2937", width=250)
@@ -95,15 +126,41 @@ class LunoTraderUI(tk.Tk):
 
         tk.Frame(self.sidebar, bg="#1f2937").pack(fill="both", expand=True)
 
+        footer = tk.Frame(self.sidebar, bg="#1f2937")
+        footer.pack(fill="x", pady=20)
+
         tk.Label(
-            self.sidebar,
-            text="Version 2.0.0\n© 2026 QuantumMind Software",
+            footer,
+            text="Version 2.0.0",
             bg="#1f2937",
             fg="#cbd5e1",
             font=("Segoe UI", 9),
             justify="left",
-            pady=20
         ).pack(fill="x")
+
+        tk.Label(
+            footer,
+            text="(c) 2026",
+            bg="#1f2937",
+            fg="#cbd5e1",
+            font=("Segoe UI", 9),
+            justify="left",
+        ).pack(fill="x")
+
+        company_link = tk.Label(
+            footer,
+            text="QuantumMind Software",
+            bg="#1f2937",
+            fg="#93c5fd",
+            font=("Segoe UI", 9, "underline"),
+            cursor="hand2",
+            justify="left",
+        )
+        company_link.pack(fill="x")
+        company_link.bind(
+            "<Button-1>",
+            lambda _event: webbrowser.open("https://www.quantummindsoftware.com/"),
+        )
 
     def _build_frames(self):
         for cls, name in [

@@ -186,6 +186,7 @@ DEFAULT_RULES = [
 
 DEFAULT_CONFIG = {
     "mock_trade": True,
+    "auto_start_trader": False,
     "audit_history_file": AUDIT_HISTORY_FILE,
     "api_key_id": "",
     "api_key_secret": "",

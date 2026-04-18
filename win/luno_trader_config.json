@@ -1,5 +1,6 @@
 {
   "mock_trade": true,
+  "auto_start_trader": true,
   "audit_history_file": "trade_audit_history.json",
   "api_key_id": "ch47hp75t6bn4",
   "api_key_secret": "whjLd4hn5885TXIAwUkiGKh0XwhPoGdIfMytv6kPfLI",

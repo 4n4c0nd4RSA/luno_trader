@@ -15,6 +15,7 @@ class ConfigFrame(BasePage):
         super().__init__(parent, app)
 
         self.mock_trade_var = tk.BooleanVar()
+        self.auto_start_trader_var = tk.BooleanVar()
         self.api_key_id_var = tk.StringVar()
         self.api_key_secret_var = tk.StringVar()
 
@@ -110,6 +111,18 @@ class ConfigFrame(BasePage):
             font=("Segoe UI", 10),
             command=self._on_toggle_mock_trade
         ).pack(anchor="w", padx=20, pady=(0, 14))
+
+        self.auto_start_trader_check = tk.Checkbutton(
+            form,
+            text="Auto-Start Trader",
+            variable=self.auto_start_trader_var,
+            bg="white",
+            fg="#111827",
+            activebackground="white",
+            font=("Segoe UI", 10),
+            command=self._on_toggle_auto_start_trader,
+        )
+        self.auto_start_trader_check.pack(anchor="w", padx=20, pady=(0, 14))
 
         self._field(form, "API Key ID", self.api_key_id_var)
         self._field(form, "API Key Secret", self.api_key_secret_var, show="*")
@@ -320,9 +333,32 @@ class ConfigFrame(BasePage):
                 )
                 self.mock_trade_var.set(True)
 
+    def _on_toggle_auto_start_trader(self):
+        if not self.auto_start_trader_var.get():
+            return
+
+        valid, _, message = self._has_valid_live_trading_license()
+        if not valid:
+            messagebox.showerror(
+                "Valid Certificate Required",
+                f"A valid certificate/license is required to enable Auto-Start Trader.\n\n{message}"
+            )
+            self.auto_start_trader_var.set(False)
+
+    def _sync_auto_start_trader_state(self):
+        if not hasattr(self, "auto_start_trader_check"):
+            return
+
+        valid, _, _ = self._has_valid_live_trading_license()
+        state = "normal" if valid else "disabled"
+        self.auto_start_trader_check.config(state=state)
+        if not valid:
+            self.auto_start_trader_var.set(False)
+
     def refresh(self):
         cfg = self.app.config_data
         self._refresh_license_status()
+        self._sync_auto_start_trader_state()
 
         mock_trade = cfg.get("mock_trade", True)
         if not mock_trade:
@@ -330,7 +366,13 @@ class ConfigFrame(BasePage):
             if not valid:
                 mock_trade = True
 
+        auto_start_trader = bool(cfg.get("auto_start_trader", False))
+        valid, _, _ = self._has_valid_live_trading_license()
+        if not valid:
+            auto_start_trader = False
+
         self.mock_trade_var.set(mock_trade)
+        self.auto_start_trader_var.set(auto_start_trader)
         self.api_key_id_var.set(cfg.get("api_key_id", ""))
         self.api_key_secret_var.set(cfg.get("api_key_secret", ""))
         self.pair_var.set(cfg.get("pair", "XBTZAR"))
@@ -434,7 +476,16 @@ class ConfigFrame(BasePage):
             if not valid:
                 raise Exception(f"Valid license required to disable mock trading.\n\n{message}")
 
+        auto_start_trader = bool(self.auto_start_trader_var.get())
+        if auto_start_trader:
+            valid, _, message = self._has_valid_live_trading_license()
+            if not valid:
+                raise Exception(
+                    f"Valid certificate/license required to enable Auto-Start Trader.\n\n{message}"
+                )
+
         cfg["mock_trade"] = mock_trade
+        cfg["auto_start_trader"] = auto_start_trader
         cfg["api_key_id"] = self.api_key_id_var.get().strip()
         cfg["api_key_secret"] = self.api_key_secret_var.get().strip()
         cfg["pair"] = self.pair_var.get().strip() or "XBTZAR"
