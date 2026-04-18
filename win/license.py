@@ -66,11 +66,27 @@ def generate_license_jwt(
     return token
 
 if __name__ == "__main__":
+    customer = input("Customer name: ").strip()
+    if not customer:
+        raise ValueError("Customer name is required.")
+
+    days_valid_text = input("Days valid: ").strip()
+    if not days_valid_text:
+        raise ValueError("Days valid is required.")
+
+    try:
+        days_valid = int(days_valid_text)
+    except ValueError as exc:
+        raise ValueError("Days valid must be a whole number.") from exc
+
+    # if days_valid <= 0:
+    #     raise ValueError("Days valid must be greater than 0.")
+
     token = generate_license_jwt(
         license_id="LIC-000001",
-        customer="ACME Pty Ltd",
+        customer=customer,
         audience="luno-bot",
-        days_valid=365,
+        days_valid=days_valid,
         license_type="pro",
         features=["sync", "reports"],
         seats=1,

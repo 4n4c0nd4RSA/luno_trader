@@ -34,6 +34,9 @@ class DashboardFrame(BasePage):
         self._status_job = None
         self._latest_analysis_error = None
         self._current_analysis = None
+        self.start_trader_button = None
+        self.stop_trader_button = None
+        self.run_once_button = None
 
         self.build_header("Dashboard", "See your trade audit history and control the live trader loop.")
         self._build_ui()
@@ -45,7 +48,7 @@ class DashboardFrame(BasePage):
         top = tk.Frame(wrapper, bg="#f4f6f8")
         top.pack(fill="x", pady=(0, 10))
 
-        tk.Button(
+        self.start_trader_button = tk.Button(
             top,
             text="Start Trader",
             bg="#2563eb",
@@ -56,9 +59,10 @@ class DashboardFrame(BasePage):
             padx=18,
             pady=10,
             command=self._start_trader,
-        ).pack(side="left", padx=(0, 10))
+        )
+        self.start_trader_button.pack(side="left", padx=(0, 10))
 
-        tk.Button(
+        self.stop_trader_button = tk.Button(
             top,
             text="Stop Trader",
             bg="#ef4444",
@@ -69,9 +73,9 @@ class DashboardFrame(BasePage):
             padx=18,
             pady=10,
             command=self._stop_trader,
-        ).pack(side="left", padx=(0, 10))
+        )
 
-        tk.Button(
+        self.run_once_button = tk.Button(
             top,
             text="Run Once Now",
             bg="#0f766e",
@@ -82,7 +86,8 @@ class DashboardFrame(BasePage):
             padx=18,
             pady=10,
             command=self._run_trader_once,
-        ).pack(side="left", padx=(0, 10))
+        )
+        self.run_once_button.pack(side="left", padx=(0, 10))
 
         tk.Button(
             top,
@@ -122,7 +127,7 @@ class DashboardFrame(BasePage):
         status_strip = tk.Frame(wrapper, bg="#f4f6f8")
         status_strip.pack(fill="x", pady=(0, 10))
 
-        for key in ["Trader", "Last Signal", "Last Action", "Next Check", "Last Run", "Error"]:
+        for key in ["Trader", "Last Signal", "Next Check", "Last Run", "Error"]:
             card = tk.Frame(status_strip, bg="white", bd=1, relief="solid")
             card.pack(side="left", fill="x", expand=True, padx=6)
 
@@ -348,13 +353,35 @@ class DashboardFrame(BasePage):
 
     def _refresh_trader_status(self):
         status = self.app.get_trader_status()
+        self._sync_trader_action_buttons(status)
         trader_text = "RUNNING" if status.get("running") else status.get("mode", "STOPPED")
         self.trader_status_labels["Trader"].config(text=trader_text)
         self.trader_status_labels["Last Signal"].config(text=str(status.get("last_signal", "-")))
-        self.trader_status_labels["Last Action"].config(text=str(status.get("last_action", "-")))
         self.trader_status_labels["Next Check"].config(text=self._format_countdown(status.get("next_run_in_seconds")))
         self.trader_status_labels["Last Run"].config(text=self._format_status_time(status.get("last_run_at")))
         self.trader_status_labels["Error"].config(text=str(status.get("last_error", "")) or "-")
+
+    def _sync_trader_action_buttons(self, status):
+        if self.start_trader_button is None or self.stop_trader_button is None:
+            return
+
+        is_running = bool(status.get("running"))
+        if is_running:
+            if self.start_trader_button.winfo_manager():
+                self.start_trader_button.pack_forget()
+            if not self.stop_trader_button.winfo_manager():
+                pack_kwargs = {"side": "left", "padx": (0, 10)}
+                if self.run_once_button is not None:
+                    pack_kwargs["before"] = self.run_once_button
+                self.stop_trader_button.pack(**pack_kwargs)
+        else:
+            if self.stop_trader_button.winfo_manager():
+                self.stop_trader_button.pack_forget()
+            if not self.start_trader_button.winfo_manager():
+                pack_kwargs = {"side": "left", "padx": (0, 10)}
+                if self.run_once_button is not None:
+                    pack_kwargs["before"] = self.run_once_button
+                self.start_trader_button.pack(**pack_kwargs)
 
     def _schedule_status_refresh(self):
         if self._status_job is not None:

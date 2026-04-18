@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from config_defaults import AUDIT_HISTORY_FILE, CONFIG_FILE, ensure_config_shape
+from license_util import check_license_file
 from rules_engine import build_analysis_from_luno, compute_current_market_signal
 
 try:
@@ -15,6 +16,23 @@ except Exception:
 
 
 CONFIG_PATH = Path(CONFIG_FILE)
+
+
+def ensure_live_trading_allowed(cfg: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    cfg = cfg or load_config()
+    if bool(cfg.get("mock_trade", True)):
+        return cfg
+
+    valid, _, message = check_license_file(
+        license_file_path="license.key",
+        public_key_path="public_key.pem",
+    )
+    if not valid:
+        raise RuntimeError(
+            "A valid license key is required for non-mock trading.\n\n"
+            f"{message}"
+        )
+    return cfg
 
 
 def load_config() -> Dict[str, Any]:
@@ -48,6 +66,7 @@ def buy(
     market_price: Optional[float] = None,
 ) -> Dict[str, Any]:
     cfg = cfg or load_config()
+    ensure_live_trading_allowed(cfg)
     pair = pair or str(cfg.get("pair", "XBTZAR")).strip() or "XBTZAR"
 
     amount_zar = float(amount_zar)
@@ -107,6 +126,7 @@ def sell(
     market_price: Optional[float] = None,
 ) -> Dict[str, Any]:
     cfg = cfg or load_config()
+    ensure_live_trading_allowed(cfg)
     pair = pair or str(cfg.get("pair", "XBTZAR")).strip() or "XBTZAR"
 
     btc_amount = float(btc_amount)
@@ -198,6 +218,9 @@ class TraderRunner:
         }
 
     def start(self) -> bool:
+        cfg = load_config()
+        ensure_live_trading_allowed(cfg)
+
         with self._lock:
             if self._thread is not None and self._thread.is_alive():
                 return False
@@ -245,6 +268,7 @@ class TraderRunner:
 
     def run_once(self) -> Dict[str, Any]:
         cfg = load_config()
+        ensure_live_trading_allowed(cfg)
         engine_result = build_analysis_from_luno(cfg)
         position_state = self._get_position_state(cfg)
         signal_cfg = dict(cfg)

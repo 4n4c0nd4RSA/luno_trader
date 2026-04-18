@@ -2,45 +2,68 @@ import os
 import time
 import logging
 import random
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Tuple, Optional, Dict, Any
 
 import numpy as np
 import pandas as pd
 import luno_python.client as luno
+from config_defaults import CONFIG_FILE, ensure_config_shape
 from rules_engine import build_macd_signals
 
 # =========
 # Settings
 # =========
-PAIR = os.getenv("PAIR", "XBTZAR")
+CONFIG_PATH = Path(CONFIG_FILE)
+
+
+def load_saved_config() -> Dict[str, Any]:
+    if CONFIG_PATH.exists():
+        with CONFIG_PATH.open("r", encoding="utf-8") as f:
+            return ensure_config_shape(json.load(f))
+    return ensure_config_shape({})
+
+
+SAVED_CONFIG = load_saved_config()
+
+
+def env_or_config(name: str, config_key: str, default: Any) -> Any:
+    env_value = os.getenv(name)
+    if env_value not in (None, ""):
+        return env_value
+    return SAVED_CONFIG.get(config_key, default)
+
+
+PAIR = str(env_or_config("PAIR", "pair", "XBTZAR"))
 
 RUN_COUNT = int(os.getenv("RUN_COUNT", "100"))
-MIN_HISTORY_HOURS = int(os.getenv("MIN_HISTORY_HOURS", "1000"))
+MIN_HISTORY_HOURS = int(env_or_config("MIN_HISTORY_HOURS", "history_hours", 1000))
 MAX_HISTORY_HOURS = int(os.getenv("MAX_HISTORY_HOURS", "114000"))
 
-CANDLE_SECONDS = int(os.getenv("CANDLE_SECONDS", "3600"))
-TREND_WINDOW_HOURS = int(os.getenv("TREND_WINDOW_HOURS", "48"))
-BACKTEST_START_ZAR = float(os.getenv("BACKTEST_START_ZAR", "10000"))
+CANDLE_SECONDS = int(env_or_config("CANDLE_SECONDS", "candle_seconds", 3600))
+TREND_WINDOW_HOURS = int(env_or_config("TREND_WINDOW_HOURS", "trend_window_hours", 48))
+BACKTEST_START_ZAR = float(env_or_config("BACKTEST_START_ZAR", "backtest_start_zar", 10000))
 
-TRADE_BUY_FEE_RATE = float(os.getenv("TRADE_BUY_FEE_RATE", "0.005"))
-TRADE_SELL_FEE_RATE = float(os.getenv("TRADE_SELL_FEE_RATE", "0.003"))
+TRADE_BUY_FEE_RATE = float(env_or_config("TRADE_BUY_FEE_RATE", "trade_buy_fee_rate", 0.005))
+TRADE_SELL_FEE_RATE = float(env_or_config("TRADE_SELL_FEE_RATE", "trade_sell_fee_rate", 0.003))
 
-CURRENT_ENTRY_PRICE = float(os.getenv("CURRENT_ENTRY_PRICE", "0"))
+CURRENT_ENTRY_PRICE = float(env_or_config("CURRENT_ENTRY_PRICE", "current_entry_price", 0))
 
-RAW_SCORE_BUY_BIAS = float(os.getenv("RAW_SCORE_BUY_BIAS", "10"))
-RAW_SCORE_SELL_BIAS = float(os.getenv("RAW_SCORE_SELL_BIAS", "-40"))
+RAW_SCORE_BUY_BIAS = float(env_or_config("RAW_SCORE_BUY_BIAS", "raw_score_buy_bias", 10))
+RAW_SCORE_SELL_BIAS = float(env_or_config("RAW_SCORE_SELL_BIAS", "raw_score_sell_bias", -40))
 
-SELL_RED_BODY_MIN_DIFF = float(os.getenv("SELL_RED_BODY_MIN_DIFF", "10000"))
+SELL_RED_BODY_MIN_DIFF = float(env_or_config("SELL_RED_BODY_MIN_DIFF", "sell_red_body_min_diff", 10000))
 
-ENTRY_MIN_ADX = float(os.getenv("ENTRY_MIN_ADX", "20"))
-ENTRY_MIN_HIST = float(os.getenv("ENTRY_MIN_HIST", "0"))
-EARLY_FAIL_MAX_PROFIT_PCT = float(os.getenv("EARLY_FAIL_MAX_PROFIT_PCT", "1.5"))
-MIN_BEARISH_EXIT_PROFIT_PCT = float(os.getenv("MIN_BEARISH_EXIT_PROFIT_PCT", "2.5"))
-STOP_LOSS_PCT = float(os.getenv("STOP_LOSS_PCT", "-2.5"))
-MIN_TRAIL_PROFIT_PCT = float(os.getenv("MIN_TRAIL_PROFIT_PCT", "1.0"))
-TRAIL_GIVEBACK_RATIO = float(os.getenv("TRAIL_GIVEBACK_RATIO", "0.60"))
-MAX_BUY_CHANNEL_POS = float(os.getenv("MAX_BUY_CHANNEL_POS", "0.2"))
+ENTRY_MIN_ADX = float(env_or_config("ENTRY_MIN_ADX", "entry_min_adx", 20))
+ENTRY_MIN_HIST = float(env_or_config("ENTRY_MIN_HIST", "entry_min_hist", 0))
+EARLY_FAIL_MAX_PROFIT_PCT = float(env_or_config("EARLY_FAIL_MAX_PROFIT_PCT", "early_fail_max_profit_pct", 1.5))
+MIN_BEARISH_EXIT_PROFIT_PCT = float(env_or_config("MIN_BEARISH_EXIT_PROFIT_PCT", "min_bearish_exit_profit_pct", 1.0))
+STOP_LOSS_PCT = float(env_or_config("STOP_LOSS_PCT", "stop_loss_pct", -4.5))
+MIN_TRAIL_PROFIT_PCT = float(env_or_config("MIN_TRAIL_PROFIT_PCT", "min_trail_profit_pct", 1.0))
+TRAIL_GIVEBACK_RATIO = float(env_or_config("TRAIL_GIVEBACK_RATIO", "trail_giveback_ratio", 0.60))
+MAX_BUY_CHANNEL_POS = float(env_or_config("MAX_BUY_CHANNEL_POS", "max_buy_channel_pos", 0.25))
 
 RANDOM_SEED = os.getenv("RANDOM_SEED")
 if RANDOM_SEED not in (None, ""):
@@ -63,8 +86,8 @@ logging.basicConfig(
 # =========
 # Luno auth
 # =========
-LUNO_API_KEY = os.getenv("LUNO_API_KEY_ID")
-LUNO_API_SECRET = os.getenv("LUNO_API_KEY_SECRET")
+LUNO_API_KEY = os.getenv("LUNO_API_KEY_ID") or str(SAVED_CONFIG.get("api_key_id", "")).strip()
+LUNO_API_SECRET = os.getenv("LUNO_API_KEY_SECRET") or str(SAVED_CONFIG.get("api_key_secret", "")).strip()
 
 if not LUNO_API_KEY or not LUNO_API_SECRET:
     raise RuntimeError("Missing LUNO_API_KEY_ID / LUNO_API_KEY_SECRET env vars")

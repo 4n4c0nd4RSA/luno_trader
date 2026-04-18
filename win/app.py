@@ -8,7 +8,7 @@ from config_frame import ConfigFrame
 from backtest_frame import BacktestFrame
 from dashboard_frame import DashboardFrame
 from rules_engine import build_analysis_from_luno
-from trade_engine import TraderRunner
+from trade_engine import TraderRunner, ensure_live_trading_allowed
 
 
 class LunoTraderUI(tk.Tk):
@@ -44,6 +44,14 @@ class LunoTraderUI(tk.Tk):
     def save_config(self):
         with open(self.config_file, "w", encoding="utf-8") as f:
             json.dump(self.config_data, f, indent=2)
+
+    def _enforce_runtime_license_guard(self):
+        try:
+            ensure_live_trading_allowed(self.config_data)
+        except Exception:
+            if not bool(self.config_data.get("mock_trade", True)):
+                self.config_data["mock_trade"] = True
+            raise
 
     def _build_layout(self):
         self.sidebar = tk.Frame(self, bg="#1f2937", width=250)
@@ -152,7 +160,8 @@ class LunoTraderUI(tk.Tk):
                     "cash_after": round(cash_after, 2),
                     "bank_value": round(bank_value, 2),
                     "mode": "MOCK" if self.config_data.get("mock_trade", True) else "LIVE",
-                    "reason": trade.get("reason", ""),
+                    "reason": trade.get("rule_name") or trade.get("reason", ""),
+                    "display_reason": trade.get("reason", ""),
                 })
 
             events = []
@@ -191,6 +200,7 @@ class LunoTraderUI(tk.Tk):
     def start_trader(self):
         self.save_config()
         self.config_data = self.load_config()
+        self._enforce_runtime_license_guard()
         return self.trader_runner.start()
 
     def stop_trader(self):
@@ -202,6 +212,7 @@ class LunoTraderUI(tk.Tk):
     def run_trader_once(self):
         self.save_config()
         self.config_data = self.load_config()
+        self._enforce_runtime_license_guard()
         result = self.trader_runner.run_once()
         engine_result = result.get("engine_result")
         if isinstance(engine_result, dict):

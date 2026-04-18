@@ -703,6 +703,10 @@ def _get_rule_reason(rule_name: str, cfg: Dict[str, Any]) -> str:
     return str(rule_name)
 
 
+def _get_primary_rule_name(rule_names: List[str]) -> str:
+    return str(rule_names[0]) if rule_names else ""
+
+
 def build_macd_signals(df: pd.DataFrame) -> List[dict]:
     cfg = load_config()
 
@@ -743,6 +747,7 @@ def build_macd_signals(df: pd.DataFrame) -> List[dict]:
         sell_hits = rule_state["sell_hits"]
 
         if (not in_position) and buy_hits:
+            primary_rule = _get_primary_rule_name(buy_hits)
             signals.append({
                 "exec_idx": i,
                 "exec_time": exec_time,
@@ -756,13 +761,15 @@ def build_macd_signals(df: pd.DataFrame) -> List[dict]:
                 "max_profit_pct": 0.0,
                 "peak_profit_pct": 0.0,
                 "profit": 0.0,
-                "reason": _get_rule_reason(buy_hits[0], cfg),
+                "rule_name": primary_rule,
+                "reason": _get_rule_reason(primary_rule, cfg),
                 "matched_rules": buy_hits,
             })
             last_buy_price = exec_price
             peak_profit_pct = 0.0
 
         elif in_position and sell_hits:
+            primary_rule = _get_primary_rule_name(sell_hits)
             signals.append({
                 "exec_idx": i,
                 "exec_time": exec_time,
@@ -776,7 +783,8 @@ def build_macd_signals(df: pd.DataFrame) -> List[dict]:
                 "max_profit_pct": max_profit_signal_pct,
                 "peak_profit_pct": peak_profit_pct,
                 "profit": profit,
-                "reason": _get_rule_reason(sell_hits[0], cfg),
+                "rule_name": primary_rule,
+                "reason": _get_rule_reason(primary_rule, cfg),
                 "matched_rules": sell_hits,
             })
             peak_profit_pct = 0.0

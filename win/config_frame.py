@@ -1,5 +1,6 @@
 import json
 import tkinter as tk
+from datetime import datetime, timezone
 from tkinter import ttk, messagebox
 
 from base_page import BasePage
@@ -36,6 +37,9 @@ class ConfigFrame(BasePage):
         self.min_trail_profit_pct_var = tk.StringVar()
         self.trail_giveback_ratio_var = tk.StringVar()
         self.max_buy_channel_pos_var = tk.StringVar()
+        self.license_status_frame = None
+        self.license_status_title = None
+        self.license_status_body = None
 
         self.rules = []
         self.rule_table = None
@@ -70,6 +74,31 @@ class ConfigFrame(BasePage):
             fg="#111827",
             font=("Segoe UI", 16, "bold")
         ).pack(anchor="w", padx=20, pady=(20, 14))
+
+        self.license_status_frame = tk.Frame(form, bg="#eff6ff", bd=1, relief="solid")
+        self.license_status_frame.pack(fill="x", padx=20, pady=(0, 14))
+
+        self.license_status_title = tk.Label(
+            self.license_status_frame,
+            text="License Status",
+            bg="#eff6ff",
+            fg="#1d4ed8",
+            font=("Segoe UI", 10, "bold"),
+            justify="left",
+            anchor="w",
+        )
+        self.license_status_title.pack(fill="x", padx=12, pady=(10, 2))
+
+        self.license_status_body = tk.Label(
+            self.license_status_frame,
+            text="Checking license key...",
+            bg="#eff6ff",
+            fg="#1e3a8a",
+            font=("Segoe UI", 10),
+            justify="left",
+            anchor="w",
+        )
+        self.license_status_body.pack(fill="x", padx=12, pady=(0, 10))
 
         tk.Checkbutton(
             form,
@@ -199,6 +228,88 @@ class ConfigFrame(BasePage):
         )
         return valid, payload, message
 
+    def _get_license_status_display(self):
+        valid, payload, message = self._has_valid_live_trading_license()
+
+        if not valid:
+            return {
+                "bg": "#fef2f2",
+                "title_fg": "#b91c1c",
+                "body_fg": "#7f1d1d",
+                "title": "License Status: Invalid",
+                "body": message,
+            }
+
+        payload = payload or {}
+        customer = str(payload.get("customer", "")).strip() or "Unknown company"
+        expiry_dt = self._extract_license_expiry(payload)
+        expiry_text = expiry_dt.strftime("%Y-%m-%d") if expiry_dt else str(payload.get("valid_until", "Unknown"))
+
+        body_lines = [
+            f"Company: {customer}",
+            f"Expires: {expiry_text}",
+        ]
+
+        if expiry_dt is not None:
+            now_utc = datetime.now(timezone.utc)
+            days_left = max(0, int((expiry_dt - now_utc).total_seconds() // 86400))
+            if days_left <= 30:
+                return {
+                    "bg": "#fff7ed",
+                    "title_fg": "#c2410c",
+                    "body_fg": "#9a3412",
+                    "title": "License Status: Warning",
+                    "body": "\n".join(
+                        body_lines
+                        + [f"Warning: Only {days_left} day(s) left on this license."]
+                    ),
+                }
+
+        return {
+            "bg": "#ecfdf5",
+            "title_fg": "#047857",
+            "body_fg": "#065f46",
+            "title": "License Status: Valid",
+            "body": "\n".join(body_lines),
+        }
+
+    def _extract_license_expiry(self, payload):
+        exp_value = payload.get("exp")
+        if exp_value not in (None, ""):
+            try:
+                return datetime.fromtimestamp(float(exp_value), tz=timezone.utc)
+            except Exception:
+                pass
+
+        valid_until = str(payload.get("valid_until", "")).strip()
+        if valid_until:
+            for candidate in [valid_until, f"{valid_until}T23:59:59+00:00"]:
+                try:
+                    dt_value = datetime.fromisoformat(candidate)
+                    if dt_value.tzinfo is None:
+                        dt_value = dt_value.replace(tzinfo=timezone.utc)
+                    return dt_value.astimezone(timezone.utc)
+                except Exception:
+                    continue
+        return None
+
+    def _refresh_license_status(self):
+        if not self.license_status_frame:
+            return
+
+        status = self._get_license_status_display()
+        self.license_status_frame.config(bg=status["bg"], highlightbackground=status["bg"])
+        self.license_status_title.config(
+            text=status["title"],
+            bg=status["bg"],
+            fg=status["title_fg"],
+        )
+        self.license_status_body.config(
+            text=status["body"],
+            bg=status["bg"],
+            fg=status["body_fg"],
+        )
+
     def _on_toggle_mock_trade(self):
         if not self.mock_trade_var.get():
             valid, _, message = self._has_valid_live_trading_license()
@@ -211,6 +322,7 @@ class ConfigFrame(BasePage):
 
     def refresh(self):
         cfg = self.app.config_data
+        self._refresh_license_status()
 
         mock_trade = cfg.get("mock_trade", True)
         if not mock_trade:

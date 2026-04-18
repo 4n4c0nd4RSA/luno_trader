@@ -206,7 +206,7 @@ DEFAULT_CONFIG = {
     "stop_loss_pct": -4.5, #!-2.5
     "min_trail_profit_pct": 1.0,
     "trail_giveback_ratio": 0.60,
-    "max_buy_channel_pos": 0.40, #0.25
+    "max_buy_channel_pos": 0.25, #0.25
     "pair": "XBTZAR",
     "rules": DEFAULT_RULES,
 }

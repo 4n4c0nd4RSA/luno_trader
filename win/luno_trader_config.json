@@ -20,7 +20,7 @@
   "stop_loss_pct": -4.5,
   "min_trail_profit_pct": 1.0,
   "trail_giveback_ratio": 0.6,
-  "max_buy_channel_pos": 0.4,
+  "max_buy_channel_pos": 0.25,
   "pair": "XBTZAR",
   "rules": [
     {
@@ -118,7 +118,6 @@
       "active": true,
       "action": "SELL",
       "salience": 4,
-      "reason": "bearish_exit_in_profit",
       "checks": [
         {
           "left_type": "rule",
@@ -141,7 +140,6 @@
       "active": true,
       "action": "SELL",
       "salience": 4,
-      "reason": "bearish_exit_in_profit",
       "checks": [
         {
           "left_type": "rule",
