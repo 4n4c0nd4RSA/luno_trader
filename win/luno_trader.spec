@@ -5,7 +5,7 @@ a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
-    datas=[('luno_trader_config.json', '.'), ('trade_audit_history.json', '.'), ('license.key', '.'), ('public_key.pem', '.'), ('private_key.pem', '.')],
+    datas=[('luno_trader_config.json', '.'), ('license.key', '.'), ('public_key.pem', '.'), ('private_key.pem', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
