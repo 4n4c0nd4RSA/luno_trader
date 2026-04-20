@@ -203,11 +203,11 @@ DEFAULT_CONFIG = {
     "entry_min_adx": 20.0,
     "entry_min_hist": 0.0,
     "early_fail_max_profit_pct": 1.5,
-    "min_bearish_exit_profit_pct": 1.0, #3.5
-    "stop_loss_pct": -4.5, #!-2.5
+    "min_bearish_exit_profit_pct": 1.0,
+    "stop_loss_pct": -9.0,
     "min_trail_profit_pct": 1.0,
     "trail_giveback_ratio": 0.60,
-    "max_buy_channel_pos": 0.25, #0.25
+    "max_buy_channel_pos": 0.25,
     "pair": "XBTZAR",
     "rules": DEFAULT_RULES,
 }

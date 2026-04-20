@@ -38,7 +38,7 @@ def env_or_config(name: str, config_key: str, default: Any) -> Any:
 
 PAIR = str(env_or_config("PAIR", "pair", "XBTZAR"))
 
-RUN_COUNT = int(os.getenv("RUN_COUNT", "100"))
+RUN_COUNT = int(os.getenv("RUN_COUNT", "1000"))
 MIN_HISTORY_HOURS = int(env_or_config("MIN_HISTORY_HOURS", "history_hours", 1000))
 MAX_HISTORY_HOURS = int(os.getenv("MAX_HISTORY_HOURS", "114000"))
 
