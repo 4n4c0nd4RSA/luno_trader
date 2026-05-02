@@ -1,9 +1,9 @@
 {
   "mock_trade": true,
-  "auto_start_trader": true,
+  "auto_start_trader": false,
   "audit_history_file": "trade_audit_history.json",
-  "api_key_id": "ch47hp75t6bn4",
-  "api_key_secret": "whjLd4hn5885TXIAwUkiGKh0XwhPoGdIfMytv6kPfLI",
+  "api_key_id": "",
+  "api_key_secret": "",
   "history_hours": 1000,
   "candle_seconds": 3600,
   "trend_window_hours": 48,
@@ -25,11 +25,10 @@
   "pair": "XBTZAR",
   "rules": [
     {
-      "name": "strong_bullish_entry",
+      "name": "bullish_entry",
       "active": true,
       "action": "BUY",
       "salience": 1,
-      "reason": "strong_bullish_entry",
       "checks": [
         {
           "left_type": "signal",
@@ -57,7 +56,7 @@
     {
       "name": "bearish_reversal",
       "active": true,
-      "action": "HOLD",
+      "action": "SELL",
       "salience": 2,
       "checks": [
         {
@@ -79,7 +78,7 @@
     {
       "name": "bearish_reversal2",
       "active": true,
-      "action": "HOLD",
+      "action": "SELL",
       "salience": 2,
       "checks": [
         {
@@ -103,7 +102,6 @@
       "active": true,
       "action": "SELL",
       "salience": 3,
-      "reason": "stop_loss",
       "checks": [
         {
           "left_type": "signal",

@@ -2,7 +2,23 @@ import os
 from typing import Any, Dict, Optional, Tuple
 
 import jwt
-from jwt import ExpiredSignatureError, InvalidTokenError, InvalidSignatureError
+try:
+    from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError, InvalidTokenError
+except Exception:
+    class ExpiredSignatureError(Exception):
+        pass
+
+    class InvalidSignatureError(Exception):
+        pass
+
+    class InvalidTokenError(Exception):
+        pass
+
+
+PYJWT_INSTALL_MESSAGE = (
+    "PyJWT with crypto support is required for license validation. "
+    "Install it with: pip install \"PyJWT[crypto]\""
+)
 
 
 def load_public_key(public_key_path: str = "public_key.pem") -> str:
@@ -22,6 +38,7 @@ def check_license_jwt(
     issuer: Optional[str] = None,
     audience: Optional[str] = None,
     algorithms: Optional[list[str]] = None,
+    expected_key_id: Optional[str] = None,
 ) -> Tuple[bool, Optional[Dict[str, Any]], str]:
     """
     Check whether a JWT license is valid by verifying:
@@ -42,6 +59,9 @@ def check_license_jwt(
         )
     """
     try:
+        if not hasattr(jwt, "decode"):
+            return False, None, PYJWT_INSTALL_MESSAGE
+
         public_key = load_public_key(public_key_path)
 
         decode_kwargs: Dict[str, Any] = {
@@ -61,6 +81,19 @@ def check_license_jwt(
             decode_kwargs["options"]["verify_aud"] = False
 
         payload = jwt.decode(token, **decode_kwargs)
+
+        key_id = str(payload.get("key_id", "")).strip()
+        if not key_id:
+            return False, payload, "License token is missing required key_id claim."
+
+        expected_key_id = str(expected_key_id or "").strip()
+        if expected_key_id and key_id != expected_key_id:
+            return (
+                False,
+                payload,
+                "License key_id does not match the configured Luno API key id.",
+            )
+
         return True, payload, "License is valid."
 
     except FileNotFoundError as e:
@@ -81,6 +114,7 @@ def check_license_file(
     issuer: Optional[str] = None,
     audience: Optional[str] = None,
     algorithms: Optional[list[str]] = None,
+    expected_key_id: Optional[str] = None,
 ) -> Tuple[bool, Optional[Dict[str, Any]], str]:
     """
     Load a JWT license from a file and validate it.
@@ -101,6 +135,7 @@ def check_license_file(
             issuer=issuer,
             audience=audience,
             algorithms=algorithms,
+            expected_key_id=expected_key_id,
         )
 
     except Exception as e:

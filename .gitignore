@@ -6,3 +6,5 @@ trader-notes.txt
 *.key
 dist/
 build/
+_internal/
+.venv/

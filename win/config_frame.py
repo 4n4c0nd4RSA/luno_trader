@@ -18,6 +18,7 @@ class ConfigFrame(BasePage):
         self.auto_start_trader_var = tk.BooleanVar()
         self.api_key_id_var = tk.StringVar()
         self.api_key_secret_var = tk.StringVar()
+        self.api_key_id_entry = None
 
         self.pair_var = tk.StringVar()
         self.history_hours_var = tk.StringVar()
@@ -124,7 +125,7 @@ class ConfigFrame(BasePage):
         )
         self.auto_start_trader_check.pack(anchor="w", padx=20, pady=(0, 14))
 
-        self._field(form, "API Key ID", self.api_key_id_var)
+        self.api_key_id_entry = self._field(form, "API Key ID", self.api_key_id_var, state="readonly")
         self._field(form, "API Key Secret", self.api_key_secret_var, show="*")
         self._field(form, "PAIR", self.pair_var)
         self._field(form, "HISTORY_HOURS", self.history_hours_var)
@@ -175,7 +176,7 @@ class ConfigFrame(BasePage):
             command=self.on_run_backtest
         ).pack(side="left")
 
-    def _field(self, parent, label, variable, show=None):
+    def _field(self, parent, label, variable, show=None, state="normal"):
         tk.Label(
             parent,
             text=label,
@@ -183,7 +184,9 @@ class ConfigFrame(BasePage):
             fg="#111827",
             font=("Segoe UI", 10, "bold")
         ).pack(anchor="w", padx=20, pady=(0, 6))
-        ttk.Entry(parent, textvariable=variable, show=show).pack(fill="x", padx=20, pady=(0, 12))
+        entry = ttk.Entry(parent, textvariable=variable, show=show, state=state)
+        entry.pack(fill="x", padx=20, pady=(0, 12))
+        return entry
 
     def _build_rules_panel(self, parent):
         wrapper = tk.Frame(parent, bg="white")
@@ -235,11 +238,25 @@ class ConfigFrame(BasePage):
         self.rule_table.bind("<Double-1>", lambda e: self.edit_rule())
 
     def _has_valid_live_trading_license(self):
+        expected_key_id = self.api_key_id_var.get().strip()
+        if not expected_key_id:
+            expected_key_id = str(self.app.config_data.get("api_key_id", "")).strip()
+
         valid, payload, message = check_license_file(
             license_file_path="license.key",
             public_key_path="public_key.pem",
+            expected_key_id=expected_key_id,
         )
         return valid, payload, message
+
+    def _get_license_key_id(self):
+        valid, payload, _ = check_license_file(
+            license_file_path="license.key",
+            public_key_path="public_key.pem",
+        )
+        if not valid or not payload:
+            return ""
+        return str(payload.get("key_id", "")).strip()
 
     def _get_license_status_display(self):
         valid, payload, message = self._has_valid_live_trading_license()
@@ -260,6 +277,7 @@ class ConfigFrame(BasePage):
 
         body_lines = [
             f"Company: {customer}",
+            f"API Key ID: {payload.get('key_id', '')}",
             f"Expires: {expiry_text}",
         ]
 
@@ -357,6 +375,9 @@ class ConfigFrame(BasePage):
 
     def refresh(self):
         cfg = self.app.config_data
+        license_key_id = self._get_license_key_id()
+        self.api_key_id_var.set(license_key_id)
+
         self._refresh_license_status()
         self._sync_auto_start_trader_state()
 
@@ -373,7 +394,6 @@ class ConfigFrame(BasePage):
 
         self.mock_trade_var.set(mock_trade)
         self.auto_start_trader_var.set(auto_start_trader)
-        self.api_key_id_var.set(cfg.get("api_key_id", ""))
         self.api_key_secret_var.set(cfg.get("api_key_secret", ""))
         self.pair_var.set(cfg.get("pair", "XBTZAR"))
 
@@ -486,7 +506,7 @@ class ConfigFrame(BasePage):
 
         cfg["mock_trade"] = mock_trade
         cfg["auto_start_trader"] = auto_start_trader
-        cfg["api_key_id"] = self.api_key_id_var.get().strip()
+        cfg["api_key_id"] = self._get_license_key_id()
         cfg["api_key_secret"] = self.api_key_secret_var.get().strip()
         cfg["pair"] = self.pair_var.get().strip() or "XBTZAR"
         cfg["history_hours"] = int(self.history_hours_var.get())

@@ -6,7 +6,17 @@ class ScrollableFrame(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         canvas = tk.Canvas(self, bg="white", highlightthickness=0)
-        vscroll = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        vscroll = tk.Scrollbar(
+            self,
+            orient="vertical",
+            command=canvas.yview,
+            width=16,
+            bg="#e5e7eb",
+            troughcolor="#f3f4f6",
+            activebackground="#9ca3af",
+            relief="flat",
+            bd=0,
+        )
 
         self.inner = tk.Frame(canvas, bg="white")
         self.inner.bind(
@@ -22,3 +32,16 @@ class ScrollableFrame(ttk.Frame):
         vscroll.pack(side="right", fill="y")
 
         self.canvas = canvas
+        self.vscroll = vscroll
+
+        canvas.bind("<Enter>", self._bind_mousewheel)
+        canvas.bind("<Leave>", self._unbind_mousewheel)
+
+    def _bind_mousewheel(self, _event):
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+    def _unbind_mousewheel(self, _event):
+        self.canvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")

@@ -10,7 +10,7 @@ from config_frame import ConfigFrame
 from backtest_frame import BacktestFrame
 from dashboard_frame import DashboardFrame
 from rules_engine import build_analysis_from_luno
-from trade_engine import TraderRunner, ensure_live_trading_allowed
+from trade_engine import TraderRunner, ensure_live_trading_allowed, get_luno_user_identity
 
 
 class LunoTraderUI(tk.Tk):
@@ -35,6 +35,7 @@ class LunoTraderUI(tk.Tk):
         self._build_frames()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self.show_frame("welcome")
+        self._print_luno_user_id()
         self.after(200, self._auto_start_trader_if_enabled)
 
     def load_config(self):
@@ -60,7 +61,25 @@ class LunoTraderUI(tk.Tk):
         return check_license_file(
             license_file_path="license.key",
             public_key_path="public_key.pem",
+            expected_key_id=str(self.config_data.get("api_key_id", "")).strip(),
         )
+
+    def _print_luno_user_id(self):
+        try:
+            identity = get_luno_user_identity(self.config_data)
+        except Exception as exc:
+            print(f"Luno user_id: unavailable ({exc})")
+            return
+
+        user_ids = identity.get("user_ids", [])
+        if user_ids:
+            print(f"Luno user_id: {', '.join(user_ids)}")
+        else:
+            details = "; ".join(identity.get("diagnostics", []))
+            print(f"Luno user_id: unavailable ({details})")
+            api_key_id = str(identity.get("api_key_id", "")).strip()
+            if api_key_id:
+                print(f"Luno API key_id: {api_key_id}")
 
     def _auto_start_trader_if_enabled(self):
         self.config_data = self.load_config()

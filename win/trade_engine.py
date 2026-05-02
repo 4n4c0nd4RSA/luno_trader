@@ -23,9 +23,14 @@ def ensure_live_trading_allowed(cfg: Optional[Dict[str, Any]] = None) -> Dict[st
     if bool(cfg.get("mock_trade", True)):
         return cfg
 
+    api_key_id = str(cfg.get("api_key_id", "")).strip()
+    if not api_key_id:
+        raise RuntimeError("A licensed Luno API key id is required for non-mock trading.")
+
     valid, _, message = check_license_file(
         license_file_path="license.key",
         public_key_path="public_key.pem",
+        expected_key_id=api_key_id,
     )
     if not valid:
         raise RuntimeError(
@@ -55,6 +60,58 @@ def get_luno_client(cfg: Optional[Dict[str, Any]] = None):
         raise RuntimeError("Missing api_key_id / api_key_secret in config.")
 
     return luno.Client(api_key_id=api_key, api_key_secret=api_secret)
+
+
+def get_luno_user_ids(cfg: Optional[Dict[str, Any]] = None) -> list[str]:
+    return get_luno_user_identity(cfg)["user_ids"]
+
+
+def get_luno_user_identity(cfg: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    cfg = cfg or load_config()
+    api_key = str(cfg.get("api_key_id", "")).strip()
+    client = get_luno_client(cfg)
+    user_ids = []
+    seen = set()
+    diagnostics = []
+
+    for endpoint in ("/api/1/users/list", "/api/1/users/linked"):
+        try:
+            response = client.session.request(
+                "GET",
+                client.make_url(endpoint, None),
+                timeout=client.timeout,
+                headers={"User-Agent": client.make_user_agent()},
+                auth=(client.api_key_id, client.api_key_secret),
+            )
+        except Exception as exc:
+            diagnostics.append(f"{endpoint}: {exc}")
+            continue
+
+        try:
+            payload = response.json()
+        except Exception:
+            diagnostics.append(f"{endpoint}: HTTP {response.status_code} non-JSON response")
+            continue
+
+        if response.status_code != 200:
+            message = payload.get("error") or payload.get("message") or str(payload)
+            diagnostics.append(f"{endpoint}: HTTP {response.status_code} {message}")
+            continue
+
+        users = payload.get("users", []) or []
+        diagnostics.append(f"{endpoint}: {len(users)} user(s)")
+
+        for user in users:
+            user_id = str(user.get("user_id", "")).strip()
+            if user_id and user_id not in seen:
+                seen.add(user_id)
+                user_ids.append(user_id)
+
+    return {
+        "user_ids": user_ids,
+        "api_key_id": api_key,
+        "diagnostics": diagnostics,
+    }
 
 
 def buy(

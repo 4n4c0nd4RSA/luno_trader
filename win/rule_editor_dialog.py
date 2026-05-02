@@ -108,7 +108,7 @@ class RuleEditorDialog(tk.Toplevel):
             wrapper,
             textvariable=self.action_var,
             state="readonly",
-            values=["BUY", "SELL"]
+            values=["BUY", "SELL", "HOLD"]
         ).pack(fill="x", pady=(0, 12))
 
         add_label("Salience")
