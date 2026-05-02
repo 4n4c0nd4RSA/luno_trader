@@ -349,11 +349,31 @@ class TraderRunner:
                 latest_price = float(df["Close"].iloc[-1])
             except Exception:
                 latest_price = None
-        action = str(current_signal.get("action", "HOLD")).upper()
-        matched_rules = current_signal.get("matched_rules", []) or []
-        reasons = current_signal.get("reasons", []) or []
-        reason_label = str(matched_rules[0]) if matched_rules else _infer_signal_rule_name(action, reasons, cfg)
-        reason_text = reason_label or ", ".join(str(reason) for reason in reasons[:8])
+
+        execution_signal = None
+        if df is not None and not df.empty and engine_result.get("macd_signals"):
+            latest_idx = len(df) - 1
+            execution_signal = next(
+                (
+                    signal
+                    for signal in reversed(engine_result["macd_signals"])
+                    if int(signal.get("exec_idx", -1)) == latest_idx
+                ),
+                None,
+            )
+
+        if execution_signal is not None:
+            action = str(execution_signal.get("action", "HOLD")).upper()
+            matched_rules = execution_signal.get("matched_rules", []) or []
+            reason_label = str(execution_signal.get("rule_name") or execution_signal.get("reason", "")).strip()
+            reason_text = reason_label or ", ".join(str(reason) for reason in current_signal.get("reasons", [])[:8])
+        else:
+            action = str(current_signal.get("action", "HOLD")).upper()
+            matched_rules = current_signal.get("matched_rules", []) or []
+            reasons = current_signal.get("reasons", []) or []
+            reason_label = str(matched_rules[0]) if matched_rules else _infer_signal_rule_name(action, reasons, cfg)
+            reason_text = reason_label or ", ".join(str(reason) for reason in reasons[:8])
+
         order_event = None
 
         if action == "BUY" and not position_state["in_position"]:
