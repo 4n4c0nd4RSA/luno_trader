@@ -1,6 +1,6 @@
 {
   "mock_trade": true,
-  "auto_start_trader": true,
+  "auto_start_trader": false,
   "audit_history_file": "trade_audit_history.json",
   "api_key_id": "ch47hp75t6bn4",
   "api_key_secret": "whjLd4hn5885TXIAwUkiGKh0XwhPoGdIfMytv6kPfLI",
@@ -17,7 +17,7 @@
   "entry_min_adx": 20.0,
   "entry_min_hist": 0.0,
   "early_fail_max_profit_pct": 1.5,
-  "min_bearish_exit_profit_pct": 1.1,
+  "min_bearish_exit_profit_pct": 1.0,
   "stop_loss_pct": -9.0,
   "min_trail_profit_pct": 1.0,
   "trail_giveback_ratio": 0.6,

@@ -150,7 +150,7 @@ class LunoTraderUI(tk.Tk):
 
         tk.Label(
             footer,
-            text="Version 2.0.0",
+            text="Version 2.0.2",
             bg="#1f2937",
             fg="#cbd5e1",
             font=("Segoe UI", 9),

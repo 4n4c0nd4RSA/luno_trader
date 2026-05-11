@@ -16,8 +16,10 @@ class ConfigFrame(BasePage):
 
         self.mock_trade_var = tk.BooleanVar()
         self.auto_start_trader_var = tk.BooleanVar()
+        self.license_key_id_var = tk.StringVar()
         self.api_key_id_var = tk.StringVar()
         self.api_key_secret_var = tk.StringVar()
+        self.license_key_id_entry = None
         self.api_key_id_entry = None
 
         self.pair_var = tk.StringVar()
@@ -125,7 +127,8 @@ class ConfigFrame(BasePage):
         )
         self.auto_start_trader_check.pack(anchor="w", padx=20, pady=(0, 14))
 
-        self.api_key_id_entry = self._field(form, "API Key ID", self.api_key_id_var, state="readonly")
+        self.license_key_id_entry = self._field(form, "License Key ID", self.license_key_id_var, state="readonly")
+        self.api_key_id_entry = self._field(form, "API Key ID", self.api_key_id_var)
         self._field(form, "API Key Secret", self.api_key_secret_var, show="*")
         self._field(form, "PAIR", self.pair_var)
         self._field(form, "HISTORY_HOURS", self.history_hours_var)
@@ -240,7 +243,7 @@ class ConfigFrame(BasePage):
     def _has_valid_live_trading_license(self):
         expected_key_id = self.api_key_id_var.get().strip()
         if not expected_key_id:
-            expected_key_id = str(self.app.config_data.get("api_key_id", "")).strip()
+            return False, None, "Configured Luno API key id is required."
 
         valid, payload, message = check_license_file(
             license_file_path="license.key",
@@ -277,7 +280,7 @@ class ConfigFrame(BasePage):
 
         body_lines = [
             f"Company: {customer}",
-            f"API Key ID: {payload.get('key_id', '')}",
+            f"License Key ID: {payload.get('key_id', '')}",
             f"Expires: {expiry_text}",
         ]
 
@@ -376,7 +379,8 @@ class ConfigFrame(BasePage):
     def refresh(self):
         cfg = self.app.config_data
         license_key_id = self._get_license_key_id()
-        self.api_key_id_var.set(license_key_id)
+        self.license_key_id_var.set(license_key_id)
+        self.api_key_id_var.set(cfg.get("api_key_id", ""))
 
         self._refresh_license_status()
         self._sync_auto_start_trader_state()
@@ -506,7 +510,7 @@ class ConfigFrame(BasePage):
 
         cfg["mock_trade"] = mock_trade
         cfg["auto_start_trader"] = auto_start_trader
-        cfg["api_key_id"] = self._get_license_key_id()
+        cfg["api_key_id"] = self.api_key_id_var.get().strip()
         cfg["api_key_secret"] = self.api_key_secret_var.get().strip()
         cfg["pair"] = self.pair_var.get().strip() or "XBTZAR"
         cfg["history_hours"] = int(self.history_hours_var.get())
