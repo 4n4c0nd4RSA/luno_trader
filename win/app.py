@@ -1,6 +1,8 @@
 import json
+import sys
 import tkinter as tk
 import webbrowser
+from pathlib import Path
 from tkinter import messagebox
 
 from config_defaults import APP_TITLE, CONFIG_FILE, ensure_config_shape
@@ -13,10 +15,16 @@ from rules_engine import build_analysis_from_luno
 from trade_engine import TraderRunner, ensure_live_trading_allowed, get_luno_user_identity
 
 
+def resource_path(relative_path):
+    base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    return base_path / relative_path
+
+
 class LunoTraderUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title(APP_TITLE)
+        self._set_window_icon()
         self.geometry("1640x940")
         self.minsize(1320, 760)
         self.configure(bg="#f4f6f8")
@@ -37,6 +45,14 @@ class LunoTraderUI(tk.Tk):
         self.show_frame("welcome")
         self._print_luno_user_id()
         self.after(200, self._auto_start_trader_if_enabled)
+
+    def _set_window_icon(self):
+        icon_path = resource_path("app_icon.ico")
+        if icon_path.exists():
+            try:
+                self.iconbitmap(default=str(icon_path))
+            except tk.TclError:
+                pass
 
     def load_config(self):
         try:
@@ -113,7 +129,7 @@ class LunoTraderUI(tk.Tk):
 
         tk.Label(
             self.sidebar,
-            text="Luno Trader",
+            text="Trader for Luno",
             bg="#1f2937",
             fg="white",
             font=("Segoe UI", 18, "bold"),

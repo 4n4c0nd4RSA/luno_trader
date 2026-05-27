@@ -29,7 +29,7 @@ class WelcomeFrame(BasePage):
         text.pack(fill="both", expand=True)
 
         guide = """
-Welcome to Luno Trader.
+Welcome to Trader for Luno.
 
 This app helps you configure your trading setup, test your rules on historical market data, and monitor trader activity from a single workspace.
 

@@ -2,7 +2,7 @@
 from PyInstaller.utils.hooks import collect_all
 from PyInstaller.utils.hooks import copy_metadata
 
-datas = [('luno_trader_config.json', '.'), ('license.key', '.'), ('public_key.pem', '.'), ('private_key.pem', '.')]
+datas = [('luno_trader_config.json', '.'), ('license.key', '.'), ('public_key.pem', '.'), ('private_key.pem', '.'), ('app_icon.ico', '.')]
 binaries = []
 hiddenimports = ['jwt', 'jwt.algorithms']
 datas += copy_metadata('luno-python')

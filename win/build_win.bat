@@ -73,6 +73,7 @@ call :add_data "trade_audit_history.json"
 call :add_data "license.key"
 call :add_data "public_key.pem"
 call :add_data "private_key.pem"
+call :add_data "app_icon.ico"
 call :set_icon_arg
 call :set_collect_args
 call :ensure_not_running
@@ -222,7 +223,7 @@ call :copy_if_exists "license.key" "%APP_DIST_DIR%"
 call :copy_if_exists "public_key.pem" "%APP_DIST_DIR%"
 call :copy_if_exists "private_key.pem" "%APP_DIST_DIR%"
 (
-    echo Luno Trader Windows build
+    echo Trader for Luno Windows build
     echo.
     echo Run "Run %APP_NAME%.bat" from this folder to start the app.
     echo.

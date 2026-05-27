@@ -519,7 +519,7 @@ if __name__ == '__main__':
     btn4.on_clicked(toggle_visibility('price'))
     btn5.on_clicked(toggle_visibility('delta'))
 
-    parser = argparse.ArgumentParser(description='Luno Trading Bot')
+    parser = argparse.ArgumentParser(description='Trader for Luno')
     parser.add_argument('--true-trade', action='store_true', help='Execute real trades')
     args = parser.parse_args()
 
